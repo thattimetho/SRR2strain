@@ -21,4 +21,5 @@ rule bowtie2_index:
 rule bowtie2_map:
 ## bowtie2_map                                  : Map reads unto reference genome database
     input:
-        
+
+##

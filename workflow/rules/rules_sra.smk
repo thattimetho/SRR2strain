@@ -1,4 +1,5 @@
 ## ----- SRA-related helper rules ------
+
 from snakemake.io import expand
 
 rule sra_prefetch:
@@ -29,3 +30,4 @@ rule sra_fasterq_dump:
     shell:
         "fasterq-dump --threads {threads} --out-dir {params.sra_dataset_reads_dir} {input.sra_dataset_in}"
 
+##
