@@ -4,12 +4,11 @@ from snakemake.io import expand
 rule sra_prefetch:
 ## sra_prefetch                                 : Prefetches SRA datasets from NCBI SRA repo
     input:
-        sra_prefetch_list_in=expand("data/{run_ID}/metadata/SRR_Acc_List_{bioproject_ID}.txt",
-                                    bioproject_ID=config["metadata_settings"]["bioproject_ID"])
+        sra_prefetch_list_in="data/{run_ID}/metadata/SRR_Acc_List_{bioproject_ID}.txt"
     output:
-        sra_dataset_out="data/{run_ID}/sra_temp/{SRR_ID}.sra"
+        sra_dataset_out="data/{run_ID}/sra_temp_{bioproject_ID}/{SRR_ID}.sra"
     params:
-        sra_dataset_out_dir="data/{wildcards.run_ID}/sra_temp/"
+        sra_dataset_out_dir="data/{run_ID}/sra_temp_{bioproject_ID}/"
     threads:
         max(workflow.cores/2, 4)
     shell:
