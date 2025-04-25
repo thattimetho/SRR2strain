@@ -47,7 +47,7 @@ rule help:
 
 
 # Include rule files with on-topic rule collections
-#include: "rules/rules_bowtie2.smk"
+include: "rules/rules_bowtie2.smk"
 include: "rules/rules_prodigal.smk"
 include: "rules/rules_samtools.smk"
 include: "rules/rules_sra.smk"

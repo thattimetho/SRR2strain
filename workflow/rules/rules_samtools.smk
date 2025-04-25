@@ -9,7 +9,8 @@ rule samtools_convert_to_bam:
                             genome_ID=config["metadata_settings"]["genome_ID"])
     output:
         genome_index_out=expand("data/{genome_index_dir}/{genome_ID}_index.1.bt2",
-                                genome_index_dir=config["data_dir_settings"]["index_dir"])
+                                genome_index_dir=config["data_dir_settings"]["index_dir"],
+                                genome_ID=config["metadata_settings"]["genome_ID"])
     params:
         index_name=config["metadata_settings"]["genome_ID"]
     conda:
