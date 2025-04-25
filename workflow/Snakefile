@@ -25,8 +25,8 @@ configfile: "resources/template.yml"
 TIMESTAMP = get_time()
 
 # Create parent data output folder
-if config["general_settings"]["dataset_name"] != "dummy":
-    DATASET = config["general_settings"]["dataset_name"]
+if config["metadata_settings"]["dataset_ID"] != "dummy":
+    DATASET = config["metadata_settings"]["dataset_ID"]
 
     if os.path.exists(f"data/run/{TIMESTAMP}_{DATASET}"):
         pass
