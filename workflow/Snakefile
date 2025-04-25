@@ -1,0 +1,53 @@
+##  ___ ___ ___           ___    _            _
+## / __| _ \ _ \_  _ _ _ |_  )__| |_ _ _ __ _(_)_ _
+## \__ \   /   / || | ' \ / /(_-<  _| '_/ _` | | ' \
+## |___/_|_\_|_\\_,_|_||_/___/__/\__|_| \__,_|_|_||_|
+## Description  : Workflow for automatic mapping and analysis of reads and microdiversity
+## Author       : Thomas de Bruijn
+##
+
+# Import system packages
+import time
+import os
+# import re
+
+# Define timestamp function, to get workflow wide timestamp
+def get_time():
+    timestamp = (f"{time.localtime().tm_year}_"
+                 f"{str(time.localtime().tm_mon).zfill(2)}_"
+                 f"{str(time.localtime().tm_mday).zfill(2)}")
+    return timestamp
+
+# Load config file
+configfile: "resources/template.yml"
+
+# Assign new timestamp
+TIMESTAMP = get_time()
+
+# Create parent data output folder
+if config["general_settings"]["dataset_name"] != "dummy":
+    DATASET = config["general_settings"]["dataset_name"]
+
+    if os.path.exists(f"data/run/{TIMESTAMP}_{DATASET}"):
+        pass
+    else:
+        exit("No correpsonding run directory detected, exiting program.\n"
+             "You are advised to run the included setup script!")
+else:
+    DATASET = "dummy"
+
+## ------------ General rules ------------
+
+rule help:
+## help                                 : Prints all primary comments to stdout
+    input:
+        "workflow/Snakefile"
+    shell:
+        "sed -n 's/^##//p' {input} && sed -n 's/^##//p' workflow/rules/*.smk"
+
+
+# Include rule files with on-topic rule collections
+include: "rules/rules_bowtie2.smk"
+include: "rules/rules_prodigal.smk"
+include: "rules/rules_samtools.smk"
+include: "rules/rules_sra.smk"
