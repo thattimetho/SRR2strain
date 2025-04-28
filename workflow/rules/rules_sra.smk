@@ -1,7 +1,5 @@
 ## ----- SRA-related helper rules ------
 
-from snakemake.io import expand
-
 rule sra_prefetch:
 ## sra_prefetch                                 : Prefetches SRA datasets from NCBI SRA repo
     input:
@@ -11,7 +9,7 @@ rule sra_prefetch:
     params:
         sra_dataset_out_dir="data/{run_ID}/sra_temp_{bioproject_ID}/"
     threads:
-        max(workflow.cores/2, 4)
+        max(int(workflow.cores/2), 4)
     shell:
         "parallel --verbose -j {threads} -a {input.sra_prefetch_list_in} prefetch -O {params.sra_dataset_out_dir}"
 
@@ -26,7 +24,7 @@ rule sra_fasterq_dump:
     params:
         sra_dataset_reads_dir = "data/{run_ID}/raw_reads/"
     threads:
-        max(workflow.cores/10, 1)
+        max(int(workflow.cores/10), 1)
     shell:
         "fasterq-dump --threads {threads} --out-dir {params.sra_dataset_reads_dir} {input.sra_dataset_in}"
 

@@ -39,7 +39,7 @@ else:
 ## ------------ General rules ------------
 
 rule help:
-## help                                 : Prints all primary comments to stdout
+## help                                         : Prints all primary comments to stdout
     input:
         "workflow/Snakefile"
     shell:
