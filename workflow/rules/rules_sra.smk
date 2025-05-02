@@ -1,12 +1,14 @@
 ## ----- SRA-related helper rules ------
-from snakemake.io import temp
+from snakemake.io import temp, expand
 
 rule sra_prefetch:
 ## sra_prefetch                                 : Prefetches SRA datasets from NCBI SRA repo
     input:
-        sra_prefetch_list_in="data/{run_ID}/metadata/SRR_Acc_List.txt"
+        sra_prefetch_list_in=expand("data/{run_ID}/metadata/SRR_Acc_List_{bioproject_ID}.txt",
+                                    bioproject_ID = config["metadata_settings"]["bioproject_ID"],
+                                    run_ID = lambda wildcards: wildcards.run_ID)
     output:
-        sra_dataset_out="data/{run_ID}/sra_temp/{SRR_ID}.sra"
+        sra_dataset_out = "data/{run_ID}/sra_temp/{SRR_ID}.sra"
     params:
         sra_dataset_out_dir="data/{run_ID}/sra_temp/"
     threads:
