@@ -15,6 +15,9 @@ rule instrain_run:
         instrain_scaffold_out = "data/{run_ID}/instrain/instrain_{run_ID}_{SRR_ID}_{genome_ID}/output/instrain_{run_ID}_{SRR_ID}_scaffold_info.tsv"
     params:
         instrain_dir_out = "data/{run_ID}/instrain/instrain_{run_ID}_{SRR_ID}_{genome_ID}"
+    log:
+        stdout="data/{run_ID}/logs/instrain_{SRR_ID}_{genome_ID}.log",
+        stderr="data/{run_ID}/logs/instrain_{SRR_ID}_{genome_ID}.err.log"
     threads:
         max(workflow.cores/2, 4)
     conda:
@@ -22,7 +25,7 @@ rule instrain_run:
     shell:
         """
         inStrain profile --skip_plot_generation --skip_genome_wide -p {threads} {input.srr_mapped_in} {input.genome_db_in} 
-        -o {params.instrain_dir_out} -g {input.genes_fna_in}
+        -o {params.instrain_dir_out} -g {input.genes_fna_in} > {log.stdout} 2> {log.stderr}
         """
 
 rule phabox_lifestyle_inference:
@@ -33,12 +36,16 @@ rule phabox_lifestyle_inference:
                               genome_ID=config["metadata_settings"]["genome_ID"])
     params:
         phabox_dir_out = config["data_dir_settings"]["genome_dir"]
+    log:
+        stdout="data/{run_ID}/logs/phabox2_{genome_ID}.log",
+        stderr="data/{run_ID}/logs/phabox2_{genome_ID}.err.log"
     threads:
         max(workflow.cores/2, 4)
     conda:
         "../envs/manual-phabox.yml"
     shell:
         """
-        phabox2 --task phatyp --threads {threads} --dbdir --outpth {params.phabox_dir_out} --contigs {input.genome_db_in}
+        phabox2 --task phatyp --threads {threads} --dbdir --outpth {params.phabox_dir_out} 
+        --contigs {input.genome_db_in} > {log.stdout} 2> {log.stderr}
         """
 ##

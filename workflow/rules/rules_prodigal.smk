@@ -17,11 +17,16 @@ rule prodigal_run:
         genes_faa_out = expand("data/{genes_dir}/{genome_ID}.genes.faa",
                                genes_dir=config["data_dir_settings"]["genes_dir"],
                                genome_ID=config["metadata_settings"]["genome_ID"])
+    log:
+        stdout="data/{run_ID}/logs/prodigal_{genome_ID}.log",
+        stderr="data/{run_ID}/logs/prodigal_{genome_ID}.err.log"
+    threads:
+        4
     conda:
         "../envs/manual-tools.yml"
     shell:
         """
         prodigal -i {input.genome_db_in} -o {output.genes_db_out} -a {output.genes_faa_out} 
-        -d {output.genes_fna_out} -p anon 
+        -d {output.genes_fna_out} -p anon > {log.stdout} 2> {log.stderr}
         """
 ##

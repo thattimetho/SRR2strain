@@ -13,12 +13,15 @@ rule bowtie2_index_db:
                                   genome_ID=config["metadata_settings"]["genome_ID"])
     params:
         index_name = config["metadata_settings"]["genome_ID"]
+    log:
+        stdout = "data/{run_ID}/logs/bowtie2_build_{genome_ID}.log",
+        stderr = "data/{run_ID}/logs/bowtie2_build_{genome_ID}.err.log"
     threads:
         max(workflow.cores, 4)
     conda:
         "../envs/manual-tools.yml"
     shell:
-        "bowtie2-build --threads {threads} {input.genome_db_in} {params.index_name}_index"
+        "bowtie2-build --threads {threads} {input.genome_db_in} {params.index_name}_index > {log.stdout} 2> {log.stderr}"
 
 rule bowtie2_map:
 ## bowtie2_map                                  : Map reads unto reference genome database
@@ -31,7 +34,8 @@ rule bowtie2_map:
     output:
         mapped_reads_sam_unsorted_out = temp("data/{run_ID}/mappings/{SRR_ID}_{genome_ID}.sam")
     log:
-        stdout = "data/{run_ID}/logs/bowtie2_{SRR_ID}_{genome_ID}.log"
+        stdout = "data/{run_ID}/logs/bowtie2_{SRR_ID}_{genome_ID}.log",
+        stderr = "data/{run_ID}/logs/bowtie2_{SRR_ID}_{genome_ID}.err.log"
     threads:
         max(workflow.cores/2, 4)
     conda:
@@ -40,7 +44,7 @@ rule bowtie2_map:
         """
         bowtie2 --threads {threads} --very-sensitive-local --no-unal -x {input.genome_index_in} 
         -1 {input.sra_dataset_reads_in_1} -2 {input.sra_dataset_reads_in_2} -S {output.mapped_reads_sam_unsorted_out} >
-        {log.stdout}
+        {log.stdout} 2> {log.stderr}
         """
 
 ##

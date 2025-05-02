@@ -11,10 +11,16 @@ rule sra_prefetch:
         sra_dataset_out = "data/{run_ID}/sra_temp/{SRR_ID}.sra"
     params:
         sra_dataset_out_dir="data/{run_ID}/sra_temp/"
+    log:
+        stdout="data/{run_ID}/logs/sra_prefetch_{SRR_ID}.log",
+        stderr="data/{run_ID}/logs/sra_prefetch_{SRR_ID}.err.log"
     threads:
         max(int(workflow.cores/2), 4)
     shell:
-        "parallel --verbose --nice 16 -j {threads} -a {input.sra_prefetch_list_in} prefetch -O {params.sra_dataset_out_dir}"
+        """
+        parallel --verbose --nice 16 -j {threads} -a {input.sra_prefetch_list_in} prefetch 
+        -O {params.sra_dataset_out_dir} > {log.stdout} 2> {log.stderr}
+        """
 
 
 rule sra_fasterq_dump:
@@ -26,9 +32,15 @@ rule sra_fasterq_dump:
         sra_dataset_reads_out_2 = temp("data/{run_ID}/raw_reads/{SRR_ID}_2.fastq")
     params:
         sra_dataset_reads_dir = "data/{run_ID}/raw_reads/"
+    log:
+        stdout="data/{run_ID}/logs/sra_fasterq_dump_{SRR_ID}.log",
+        stderr="data/{run_ID}/logs/sra_fasterq_dump_{SRR_ID}.err.log"
     threads:
         1
     shell:
-        "fasterq-dump --threads {threads} --out-dir {params.sra_dataset_reads_dir} {input.sra_dataset_in}"
+        """
+        fasterq-dump --threads {threads} --out-dir {params.sra_dataset_reads_dir} {input.sra_dataset_in} > {log.stdout}
+        2> {log.stderr}
+        """
 
 ##
