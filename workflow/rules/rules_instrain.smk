@@ -12,7 +12,7 @@ rule instrain_run:
                                genes_dir=config["data_dir_settings"]["genes_dir"],
                                genome_ID=config["metadata_settings"]["genome_ID"])
     output:
-        instrain_scaffold_out = "data/{run_ID}/instrain/instrain_{run_ID}_{SRR_ID}_{genome_ID}/output/instrain_{run_ID}_{SRR_ID}_{genome_ID}_scaffold_info.tsv"
+        instrain_scaffold_out = "data/{run_ID}/instrain/instrain_{run_ID}_{SRR_ID}_{genome_ID}/output/instrain_{run_ID}_{SRR_ID}_scaffold_info.tsv"
     params:
         instrain_dir_out = "data/{run_ID}/instrain/instrain_{run_ID}_{SRR_ID}_{genome_ID}"
     threads:
