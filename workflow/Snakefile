@@ -23,18 +23,21 @@ def get_time():
 
 # Define expand sra function, used to get all possible SRR files
 def expand_sra_from_file(config = config):
-    # Empty list for appending SRA IDs later
-    sra_list = []
+    if config["metadata_settings"]["dataset_ID"] != "dummy":
+        # Empty list for appending SRA IDs later
+        sra_list = []
 
-    # Specify where the SRA accession list is located, specifically resolving the run ID
-    sra_acc_list_loc = "data/{run_ID}/metadata/SRR_Acc_List_{bioproject_ID}.txt".format(
-        run_ID = config["metadata_settings"]["dataset_ID"],
-        bioproject_ID = config["metadata_settings"]["bioproject_ID"])
+        # Specify where the SRA accession list is located, specifically resolving the run ID
+        sra_acc_list_loc = "data/{run_ID}/metadata/SRR_Acc_List_{bioproject_ID}.txt".format(
+            run_ID = config["metadata_settings"]["dataset_ID"],
+            bioproject_ID = config["metadata_settings"]["bioproject_ID"])
 
-    # Open Accession list file and add SRA IDs into sra_list
-    with open(sra_acc_list_loc, "r", encoding="UTF-8") as sra_file_in:
-        for line in sra_file_in:
-            sra_list.append(line.strip())
+        # Open Accession list file and add SRA IDs into sra_list
+        with open(sra_acc_list_loc, "r", encoding="UTF-8") as sra_file_in:
+            for line in sra_file_in:
+                sra_list.append(line.strip())
+    else:
+        sra_list = ["dummy"]
     return sra_list
 
 # Load config file
