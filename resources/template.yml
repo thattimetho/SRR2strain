@@ -6,6 +6,6 @@ metadata_settings:
 
 # Data directory settings
 data_dir_settings:
-  genome_dir: genomes_fasta/
-  index_dir: genomes_index/
-  genes_dir: genomes_genes/
+  genome_dir: genomes_fasta
+  index_dir: genomes_index
+  genes_dir: genomes_genes
