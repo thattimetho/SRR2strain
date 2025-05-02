@@ -14,8 +14,12 @@ rule bowtie2_index_db:
     params:
         index_name = config["metadata_settings"]["genome_ID"]
     log:
-        stdout = "data/{run_ID}/logs/bowtie2_build_{genome_ID}.log",
-        stderr = "data/{run_ID}/logs/bowtie2_build_{genome_ID}.err.log"
+        stdout = expand("data/{run_ID}/logs/bowtie2_build_{genome_ID}.log",
+                        run_ID = config["metadata_settings"]["dataset_ID"],
+                        genome_ID=config["metadata_settings"]["genome_ID"]),
+        stderr = expand("data/{run_ID}/logs/bowtie2_build_{genome_ID}.err.log",
+                        run_ID = config["metadata_settings"]["dataset_ID"],
+                        genome_ID=config["metadata_settings"]["genome_ID"])
     threads:
         max(workflow.cores, 4)
     conda:

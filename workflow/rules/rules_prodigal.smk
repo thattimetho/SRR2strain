@@ -18,8 +18,12 @@ rule prodigal_run:
                                genes_dir=config["data_dir_settings"]["genes_dir"],
                                genome_ID=config["metadata_settings"]["genome_ID"])
     log:
-        stdout="data/{run_ID}/logs/prodigal_{genome_ID}.log",
-        stderr="data/{run_ID}/logs/prodigal_{genome_ID}.err.log"
+        stdout=expand("data/{run_ID}/logs/prodigal_{genome_ID}.log",
+                      run_ID = config["metadata_settings"]["dataset_ID"],
+                      genome_ID=config["metadata_settings"]["genome_ID"]),
+        stderr=expand("data/{run_ID}/logs/prodigal_{genome_ID}.err.log",
+                      run_ID = config["metadata_settings"]["dataset_ID"],
+                      genome_ID=config["metadata_settings"]["genome_ID"])
     threads:
         4
     conda:
