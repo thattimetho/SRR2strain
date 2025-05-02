@@ -41,6 +41,7 @@ else:
 
 rule help:
 ## help                                         : Prints all primary comments to stdout
+##
     input:
         "workflow/Snakefile"
     shell:
