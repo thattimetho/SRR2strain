@@ -4,11 +4,11 @@ from snakemake.io import temp
 rule sra_prefetch:
 ## sra_prefetch                                 : Prefetches SRA datasets from NCBI SRA repo
     input:
-        sra_prefetch_list_in="data/{run_ID}/metadata/SRR_Acc_List_{bioproject_ID}.txt"
+        sra_prefetch_list_in="data/{run_ID}/metadata/SRR_Acc_List.txt"
     output:
-        sra_dataset_out="data/{run_ID}/sra_temp_{bioproject_ID}/{SRR_ID}.sra"
+        sra_dataset_out="data/{run_ID}/sra_temp/{SRR_ID}.sra"
     params:
-        sra_dataset_out_dir="data/{run_ID}/sra_temp_{bioproject_ID}/"
+        sra_dataset_out_dir="data/{run_ID}/sra_temp/"
     threads:
         max(int(workflow.cores/2), 4)
     shell:
@@ -25,7 +25,7 @@ rule sra_fasterq_dump:
     params:
         sra_dataset_reads_dir = "data/{run_ID}/raw_reads/"
     threads:
-        max(int(workflow.cores/10), 1)
+        1
     shell:
         "fasterq-dump --threads {threads} --out-dir {params.sra_dataset_reads_dir} {input.sra_dataset_in}"
 

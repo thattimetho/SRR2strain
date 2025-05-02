@@ -8,7 +8,7 @@ rule instrain_run:
         genome_db_in = expand("data/{genome_fasta_dir}/{genome_ID}.fa",
                               genome_fasta_dir=config["data_dir_settings"]["genome_dir"],
                               genome_ID=config["metadata_settings"]["genome_ID"]),
-        genes_fna_out = expand("data/{genes_dir}/{genome_ID}.genes.fna",
+        genes_fna_in = expand("data/{genes_dir}/{genome_ID}.genes.fna",
                                genes_dir=config["data_dir_settings"]["genes_dir"],
                                genome_ID=config["metadata_settings"]["genome_ID"])
     output:
@@ -22,6 +22,6 @@ rule instrain_run:
     shell:
         """
         inStrain profile --skip_plot_generation -p {threads} {input.srr_mapped_in} {input.genome_db_in} 
-        -o {params.instrain_dir_out} -g {input.genes_fna_out}
+        -o {params.instrain_dir_out} -g {input.genes_fna_in}
         """
 ##

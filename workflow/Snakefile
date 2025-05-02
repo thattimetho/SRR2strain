@@ -29,7 +29,7 @@ TIMESTAMP = get_time()
 if config["metadata_settings"]["dataset_ID"] != "dummy":
     DATASET = config["metadata_settings"]["dataset_ID"]
 
-    if os.path.exists(f"data/run/{TIMESTAMP}_{DATASET}"):
+    if os.path.exists(f"data/{TIMESTAMP}_{DATASET}"):
         pass
     else:
         exit("No correpsonding run directory detected, exiting program.\n"
