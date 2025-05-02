@@ -46,11 +46,10 @@ rule help:
     shell:
         "sed -n 's/^##//p' {input} && sed -n 's/^##//p' workflow/rules/*.smk"
 
-
+##
 # Include rule files with on-topic rule collections
 include: "rules/rules_bowtie2.smk"
 include: "rules/rules_prodigal.smk"
 include: "rules/rules_samtools.smk"
 include: "rules/rules_sra.smk"
 include: "rules/rules_instrain.smk"
-##
