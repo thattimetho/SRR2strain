@@ -41,12 +41,12 @@ else:
 
 rule help:
 ## help                                         : Prints all primary comments to stdout
+##
     input:
         "workflow/Snakefile"
     shell:
         "sed -n 's/^##//p' {input} && sed -n 's/^##//p' workflow/rules/*.smk"
 
-##
 # Include rule files with on-topic rule collections
 include: "rules/rules_bowtie2.smk"
 include: "rules/rules_prodigal.smk"
