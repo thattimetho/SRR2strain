@@ -10,7 +10,9 @@
 # Import system packages
 import time
 import os
-# import re
+
+# Import snakemake functions
+from snakemake.io import expand
 
 # Define timestamp function, to get workflow wide timestamp
 def get_time():
@@ -18,6 +20,22 @@ def get_time():
                  f"{str(time.localtime().tm_mon).zfill(2)}_"
                  f"{str(time.localtime().tm_mday).zfill(2)}")
     return timestamp
+
+# Define expand sra function, used to get all possible SRR files
+def expand_sra_from_file(config = config):
+    # Empty list for appending SRA IDs later
+    sra_list = []
+
+    # Specify where the SRA accession list is located, specifically resolving the run ID
+    sra_acc_list_loc = "data/{run_ID}/metadata/SRR_Acc_List_{bioproject_ID}.txt".format(
+        run_ID = config["metadata_settings"]["dataset_ID"],
+        bioproject_ID = config["metadata_settings"]["bioproject_ID"])
+
+    # Open Accession list file and add SRA IDs into sra_list
+    with open(sra_acc_list_loc, "r", encoding="UTF-8") as sra_file_in:
+        for line in sra_file_in:
+            sra_list.append(line.strip())
+    return sra_list
 
 # Load config file
 configfile: "resources/template.yml"
@@ -30,7 +48,7 @@ if config["metadata_settings"]["dataset_ID"] != "dummy":
     DATASET = config["metadata_settings"]["dataset_ID"]
 
     if os.path.exists(f"data/{TIMESTAMP}_{DATASET}"):
-        pass
+        config["metadata_settings"]["dataset_ID"] = f"{TIMESTAMP}_{DATASET}"
     else:
         exit("No correpsonding run directory detected, exiting program.\n"
              "You are advised to run the included setup script!")
@@ -38,6 +56,13 @@ else:
     DATASET = "dummy"
 
 ## ------------ General rules ------------
+
+rule all:
+## all                                          : Used for generating output according to required end file
+    input:
+        expand("data/{run_ID}/instrain/instrain_{run_ID}_{SRR_ID}_{genome_ID}/output/instrain_{run_ID}_{SRR_ID}_{genome_ID}_scaffold_info.tsv",
+               SRR_ID = expand_sra_from_file(), genome_ID = config["metadata_settings"]["genome_ID"],
+               run_ID = config["metadata_settings"]["dataset_ID"])
 
 rule help:
 ## help                                         : Prints all primary comments to stdout
