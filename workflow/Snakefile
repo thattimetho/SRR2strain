@@ -48,7 +48,7 @@ if config["metadata_settings"]["dataset_ID"] != "dummy":
     DATASET = config["metadata_settings"]["dataset_ID"]
 
     if os.path.exists(f"data/run_{TIMESTAMP}_{DATASET}"):
-        config["metadata_settings"]["dataset_ID"] = f"{TIMESTAMP}_{DATASET}"
+        config["metadata_settings"]["dataset_ID"] = f"run_{TIMESTAMP}_{DATASET}"
     else:
         exit("No correpsonding run directory detected, exiting program.\n"
              "You are advised to run the included setup script!")
