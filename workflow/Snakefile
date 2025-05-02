@@ -41,7 +41,6 @@ else:
 
 rule help:
 ## help                                         : Prints all primary comments to stdout
-##
     input:
         "workflow/Snakefile"
     shell:
@@ -53,3 +52,4 @@ include: "rules/rules_prodigal.smk"
 include: "rules/rules_samtools.smk"
 include: "rules/rules_sra.smk"
 include: "rules/rules_instrain.smk"
+##
