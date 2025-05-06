@@ -19,7 +19,7 @@ rule sra_prefetch:
     shell:
         """
         parallel --verbose --nice 16 -j {threads} -a {input.sra_prefetch_list_in} prefetch 
-        -O {params.sra_dataset_out_dir} > {log.stdout} 2> {log.stderr}
+        -O {params.sra_dataset_out_dir} -f yes > {log.stdout} 2> {log.stderr}
         """
 
 
