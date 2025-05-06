@@ -4,7 +4,7 @@ from snakemake.io import expand
 rule instrain_run:
 ## instrain_run                                 : Run inStrain to calculate sample diversity statistics
     input:
-        srr_mapped_in = "data/{run_ID}/mappings/{SRR_ID}_{genome_ID}.sam",
+        srr_mapped_in = "data/{run_ID}/mappings/{SRR_ID}_{genome_ID}.sorted.bam",
         genome_db_in = expand("data/{genome_fasta_dir}/{genome_ID}.fa",
                               genome_fasta_dir=config["data_dir_settings"]["genome_dir"],
                               genome_ID=config["metadata_settings"]["genome_ID"]),
