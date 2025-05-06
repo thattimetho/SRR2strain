@@ -23,7 +23,7 @@ rule bowtie2_index_db:
     threads:
         max(workflow.cores, 4)
     conda:
-        "../envs/manual-tools.yml"
+        "manual-tools"
     shell:
         "bowtie2-build --threads {threads} {input.genome_db_in} {params.index_name}_index > {log.stdout} 2> {log.stderr}"
 
@@ -43,7 +43,7 @@ rule bowtie2_map:
     threads:
         max(workflow.cores/2, 4)
     conda:
-        "../envs/manual-tools.yml"
+        "manual-tools"
     shell:
         """
         bowtie2 --threads {threads} --very-sensitive-local --no-unal -x {input.genome_index_in} 

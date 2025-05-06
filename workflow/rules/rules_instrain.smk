@@ -21,7 +21,7 @@ rule instrain_run:
     threads:
         max(workflow.cores/2, 4)
     conda:
-        "../envs/manual-instrain.yml"
+        "manual-instrain"
     shell:
         """
         inStrain profile --skip_plot_generation --skip_genome_wide -p {threads} {input.srr_mapped_in} {input.genome_db_in} 
@@ -42,7 +42,7 @@ rule phabox_lifestyle_inference:
     threads:
         max(workflow.cores/2, 4)
     conda:
-        "../envs/manual-phabox.yml"
+        "manual-phabox"
     shell:
         """
         phabox2 --task phatyp --threads {threads} --dbdir --outpth {params.phabox_dir_out} 

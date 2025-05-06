@@ -27,7 +27,7 @@ rule prodigal_run:
     threads:
         4
     conda:
-        "../envs/manual-tools.yml"
+        "manual-tools"
     shell:
         """
         prodigal -i {input.genome_db_in} -o {output.genes_db_out} -a {output.genes_faa_out} 

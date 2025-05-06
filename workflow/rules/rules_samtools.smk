@@ -13,7 +13,7 @@ rule samtools_convert_to_bam:
         stdout="data/{run_ID}/logs/samtools_convert2b_{SRR_ID}_{genome_ID}.log",
         stderr="data/{run_ID}/logs/samtools_convert2b_{SRR_ID}_{genome_ID}.err.log"
     conda:
-        "../envs/manual-samtools.yml"
+        "manual-samtools"
     shell:
         "samtools view -b {input} -o {output} > {log.stdout} 2> {log.stderr}"
 
@@ -30,7 +30,7 @@ rule samtools_sort:
         stdout="data/{run_ID}/logs/samtools_sort_{SRR_ID}_{genome_ID}.log",
         stderr="data/{run_ID}/logs/samtools_sort_{SRR_ID}_{genome_ID}.err.log"
     conda:
-        "../envs/manual-samtools.yml"
+        "manual-samtools"
     shell:
         "samtools sort -o {output} {input} > {log.stdout} 2> {log.stderr}"
 
