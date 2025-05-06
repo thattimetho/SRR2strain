@@ -6,6 +6,7 @@ rule sra_prefetch:
     output:
         sra_dataset_out = "data/{run_ID}/sra_temp/{SRR_ID}.sra"
     params:
+        sra_ID_prefetch = lambda wildcards: wildcards.SRR_ID,
         sra_dataset_out_dir="data/{run_ID}/sra_temp/"
     log:
         stdout="data/{run_ID}/logs/sra_prefetch_{SRR_ID}.log",
@@ -14,7 +15,7 @@ rule sra_prefetch:
         1
     shell:
         """
-        prefetch -O {params.sra_dataset_out_dir} -f yes > {log.stdout} 2> {log.stderr}
+        prefetch {params.sra_ID_prefetch} -O {params.sra_dataset_out_dir} -f yes > {log.stdout} 2> {log.stderr}
         """
 
 
