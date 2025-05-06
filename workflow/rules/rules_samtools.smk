@@ -7,6 +7,8 @@ rule samtools_convert_to_bam:
         mapped_reads_sam_unsorted_in = "data/{run_ID}/mappings/{SRR_ID}_{genome_ID}.sam"
     output:
         mapped_reads_bam_unsorted_out = temp("data/{run_ID}/mappings/{SRR_ID}_{genome_ID}.bam")
+    wildcard_constraints:
+        SRR_ID="SRR\d{8}"
     log:
         stdout="data/{run_ID}/logs/samtools_convert2b_{SRR_ID}_{genome_ID}.log",
         stderr="data/{run_ID}/logs/samtools_convert2b_{SRR_ID}_{genome_ID}.err.log"
