@@ -3,10 +3,6 @@ from snakemake.io import temp, expand
 
 rule sra_prefetch:
 ## sra_prefetch                                 : Prefetches SRA datasets from NCBI SRA repo
-    input:
-        sra_prefetch_list_in=expand("data/{run_ID}/metadata/SRR_Acc_List_{bioproject_ID}.txt",
-                                    bioproject_ID = config["metadata_settings"]["bioproject_ID"],
-                                    run_ID = lambda wildcards: wildcards.run_ID)
     output:
         sra_dataset_out = "data/{run_ID}/sra_temp/{SRR_ID}.sra"
     params:
@@ -15,11 +11,10 @@ rule sra_prefetch:
         stdout="data/{run_ID}/logs/sra_prefetch_{SRR_ID}.log",
         stderr="data/{run_ID}/logs/sra_prefetch_{SRR_ID}.err.log"
     threads:
-        max(int(workflow.cores/2), 4)
+        1
     shell:
         """
-        parallel --verbose --nice 16 -j {threads} -a {input.sra_prefetch_list_in} prefetch 
-        -O {params.sra_dataset_out_dir} -f yes > {log.stdout} 2> {log.stderr}
+        prefetch -O {params.sra_dataset_out_dir} -f yes > {log.stdout} 2> {log.stderr}
         """
 
 
