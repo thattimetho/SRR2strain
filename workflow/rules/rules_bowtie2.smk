@@ -36,7 +36,9 @@ rule bowtie2_map:
         sra_dataset_reads_in_1 = "data/{run_ID}/raw_reads/{SRR_ID}_1.fastq",
         sra_dataset_reads_in_2 = "data/{run_ID}/raw_reads/{SRR_ID}_2.fastq"
     output:
-        mapped_reads_sam_unsorted_out = temp("data/{run_ID}/mappings/{SRR_ID}_{genome_ID}.sam")
+        mapped_reads_sam_unsorted_out = temp("data/{run_ID}/mappings/{SRR_ID}_{genome_ID}.sam"),
+    params:
+        genome_index_in = "data/{wildcards.genome_index_dir}/{wildcards.genome_ID}_index"
     log:
         stdout = "data/{run_ID}/logs/bowtie2_{SRR_ID}_{genome_ID}.log",
         stderr = "data/{run_ID}/logs/bowtie2_{SRR_ID}_{genome_ID}.err.log"
@@ -46,7 +48,7 @@ rule bowtie2_map:
         "manual-tools"
     shell:
         """
-        bowtie2 --threads {threads} --very-sensitive-local --no-unal -x {input.genome_index_in} 
+        bowtie2 --threads {threads} --very-sensitive-local --no-unal -x {params.genome_index_in} 
         -1 {input.sra_dataset_reads_in_1} -2 {input.sra_dataset_reads_in_2} -S {output.mapped_reads_sam_unsorted_out} >
         {log.stdout} 2> {log.stderr}
         """
