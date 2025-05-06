@@ -35,7 +35,7 @@ rule sra_fasterq_dump:
         1
     shell:
         """
-        fasterq-dump --threads {threads} --outdir {params.sra_dataset_reads_dir} {input.sra_dataset_in} > {log.stdout}
+        fasterq-dump --threads {threads} --outdir {params.sra_dataset_reads_dir} {input.sra_dataset_in} > {log.stdout} \
         2> {log.stderr}
         """
 

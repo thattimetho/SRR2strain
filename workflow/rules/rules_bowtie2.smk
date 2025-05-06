@@ -50,8 +50,8 @@ rule bowtie2_map:
         "manual-tools"
     shell:
         """
-        bowtie2 --threads {threads} --very-sensitive-local --no-unal -x {params.genome_index_in} 
-        -1 {input.sra_dataset_reads_in_1} -2 {input.sra_dataset_reads_in_2} -S {output.mapped_reads_sam_unsorted_out} >
+        bowtie2 --threads {threads} --very-sensitive-local --no-unal -x {params.genome_index_in} \
+        -1 {input.sra_dataset_reads_in_1} -2 {input.sra_dataset_reads_in_2} -S {output.mapped_reads_sam_unsorted_out} > \
         {log.stdout} 2> {log.stderr}
         """
 

@@ -24,7 +24,7 @@ rule instrain_run:
         "manual-instrain"
     shell:
         """
-        inStrain profile --skip_plot_generation --skip_genome_wide -p {threads} {input.srr_mapped_in} {input.genome_db_in} 
+        inStrain profile --skip_plot_generation --skip_genome_wide -p {threads} {input.srr_mapped_in} {input.genome_db_in} \
         -o {params.instrain_dir_out} -g {input.genes_fna_in} > {log.stdout} 2> {log.stderr}
         """
 
@@ -45,7 +45,7 @@ rule phabox_lifestyle_inference:
         "manual-phabox"
     shell:
         """
-        phabox2 --task phatyp --threads {threads} --dbdir --outpth {params.phabox_dir_out} 
+        phabox2 --task phatyp --threads {threads} --dbdir --outpth {params.phabox_dir_out} \
         --contigs {input.genome_db_in} > {log.stdout} 2> {log.stderr}
         """
 ##
