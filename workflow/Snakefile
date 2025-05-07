@@ -63,7 +63,7 @@ else:
 rule all:
 ## all                                          : Used for generating output according to required end file
     input:
-        expand("data/{run_ID}/instrain/instrain_{run_ID}_{SRR_ID}_{genome_ID}/output/instrain_{run_ID}_{SRR_ID}_scaffold_info.tsv",
+        expand("data/{run_ID}/instrain/instrain_{run_ID}_{SRR_ID}_{genome_ID}/output/instrain_{run_ID}_{SRR_ID}_{genome_ID}_scaffold_info.tsv",
                SRR_ID = expand_sra_from_file(), genome_ID = config["metadata_settings"]["genome_ID"],
                run_ID = config["metadata_settings"]["dataset_ID"])
 
