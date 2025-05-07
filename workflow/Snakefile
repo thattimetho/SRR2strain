@@ -44,7 +44,10 @@ def expand_sra_from_file(config = config):
 configfile: "resources/template.yml"
 
 # Assign new timestamp
-TIMESTAMP = get_time()
+if config["metadata_settings"]["timestamp"]:
+    TIMESTAMP = config["metadata_settings"]["timestamp"]
+else:
+    TIMESTAMP = get_time()
 
 # Create parent data output folder
 if config["metadata_settings"]["dataset_ID"] != "dummy":

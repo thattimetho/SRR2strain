@@ -3,6 +3,7 @@ metadata_settings:
     dataset_ID: dummy
     genome_ID: dummy.fa
     bioproject_ID: dummy
+    timestamp:
 
 # Data directory settings
 data_dir_settings:
