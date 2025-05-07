@@ -45,7 +45,7 @@ configfile: "resources/template.yml"
 
 # Assign new timestamp
 if config["metadata_settings"]["timestamp"] != "":
-    TIMESTAMP = config["metadata_settings"]["timestamp"]
+    TIMESTAMP = str(config["metadata_settings"]["timestamp"])
 else:
     TIMESTAMP = get_time()
 
