@@ -49,6 +49,8 @@ if config["metadata_settings"]["timestamp"] != "":
 else:
     TIMESTAMP = get_time()
 
+print(config["metadata_settings"]["timestamp"])
+print(TIMESTAMP)
 # Create parent data output folder
 if config["metadata_settings"]["dataset_ID"] != "dummy":
     DATASET = config["metadata_settings"]["dataset_ID"]
