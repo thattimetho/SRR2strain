@@ -45,12 +45,10 @@ configfile: "resources/template.yml"
 
 # Assign new timestamp
 if config["metadata_settings"]["timestamp"] != "":
-    TIMESTAMP = str(config["metadata_settings"]["timestamp"])
+    TIMESTAMP = config["metadata_settings"]["timestamp"]
 else:
     TIMESTAMP = get_time()
 
-print(config["metadata_settings"]["timestamp"])
-print(TIMESTAMP)
 # Create parent data output folder
 if config["metadata_settings"]["dataset_ID"] != "dummy":
     DATASET = config["metadata_settings"]["dataset_ID"]
