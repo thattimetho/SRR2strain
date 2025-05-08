@@ -13,6 +13,8 @@ rule bowtie2_index_db:
                                   genome_ID=config["metadata_settings"]["genome_ID"])
     params:
         index_name = config["metadata_settings"]["genome_ID"]
+    wildcard_constraints:
+        SRR_ID=r"SRR\d{8}"
     log:
         stdout = expand("data/{run_ID}/logs/bowtie2_build_{genome_ID}.log",
                         run_ID = config["metadata_settings"]["dataset_ID"],
@@ -41,6 +43,8 @@ rule bowtie2_map:
         genome_index_in = expand("data/{genome_index_dir}/{genome_ID}_index",
                                  genome_index_dir=config["data_dir_settings"]["index_dir"],
                                  genome_ID=config["metadata_settings"]["genome_ID"])
+    wildcard_constraints:
+        SRR_ID=r"SRR\d{8}"
     log:
         stdout = "data/{run_ID}/logs/bowtie2_{SRR_ID}_{genome_ID}.log",
         stderr = "data/{run_ID}/logs/bowtie2_{SRR_ID}_{genome_ID}.err.log"
