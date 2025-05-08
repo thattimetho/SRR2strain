@@ -8,6 +8,8 @@ rule sra_prefetch:
     params:
         sra_ID_prefetch = lambda wildcards: wildcards.SRR_ID,
         sra_dataset_out_dir="data/{run_ID}/sra_temp/"
+    wildcard_constraints:
+        SRR_ID=r"SRR\d{8}"
     log:
         stdout="data/{run_ID}/logs/sra_prefetch_{SRR_ID}.log",
         stderr="data/{run_ID}/logs/sra_prefetch_{SRR_ID}.err.log"
@@ -28,6 +30,8 @@ rule sra_fasterq_dump:
         sra_dataset_reads_out_2 = temp("data/{run_ID}/raw_reads/{SRR_ID}_2.fastq")
     params:
         sra_dataset_reads_dir = "data/{run_ID}/raw_reads/"
+    wildcard_constraints:
+        SRR_ID=r"SRR\d{8}"
     log:
         stdout="data/{run_ID}/logs/sra_fasterq_dump_{SRR_ID}.log",
         stderr="data/{run_ID}/logs/sra_fasterq_dump_{SRR_ID}.err.log"
