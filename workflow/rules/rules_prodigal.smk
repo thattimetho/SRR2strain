@@ -31,6 +31,6 @@ rule prodigal_run:
     shell:
         """
         prodigal -i {input.genome_db_in} -o {output.genes_db_out} -a {output.genes_faa_out} \
-        -d {output.genes_fna_out} -p anon > {log.stdout} 2> {log.stderr}
+        -d {output.genes_fna_out} -p meta > {log.stdout} 2> {log.stderr}
         """
 ##
