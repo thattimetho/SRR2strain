@@ -16,7 +16,7 @@ rule instrain_run:
     params:
         instrain_dir_out = "data/{run_ID}/instrain/instrain_{run_ID}_{SRR_ID}_{genome_ID}"
     wildcard_constraints:
-        SRR_ID=r"SRR\d{8}"
+        SRR_ID = r"SRR\d{6,10}"
     log:
         stdout="data/{run_ID}/logs/instrain_{SRR_ID}_{genome_ID}.log",
         stderr="data/{run_ID}/logs/instrain_{SRR_ID}_{genome_ID}.err.log"
