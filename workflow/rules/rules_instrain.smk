@@ -42,7 +42,7 @@ rule phabox_lifestyle_inference:
         stdout="data/{run_ID}/logs/phabox2-{genome_ID}.log",
         stderr="data/{run_ID}/logs/phabox2-{genome_ID}.err.log"
     threads:
-        min(workflow.cores/2, 4)
+        4
     conda:
         "manual-phabox"
     shell:
