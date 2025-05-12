@@ -4,14 +4,14 @@ from snakemake.io import temp
 rule samtools_convert_to_bam:
 ## samtools_convert_to_bam                      : Index fasta file for mapping later
     input:
-        mapped_reads_sam_unsorted_in = "data/{run_ID}/mappings/{SRR_ID}_{genome_ID}.sam"
+        mapped_reads_sam_unsorted_in = "data/{run_ID}/mappings/{SRR_ID}-{genome_ID}.unsorted.sam"
     output:
-        mapped_reads_bam_unsorted_out = temp("data/{run_ID}/mappings/unsorted_{SRR_ID}_{genome_ID}.bam")
+        mapped_reads_bam_unsorted_out = temp("data/{run_ID}/mappings/{SRR_ID}-{genome_ID}.unsorted.bam")
     wildcard_constraints:
         SRR_ID = r"SRR\d{6,10}"
     log:
-        stdout="data/{run_ID}/logs/samtools_convert2b_{SRR_ID}_{genome_ID}.log",
-        stderr="data/{run_ID}/logs/samtools_convert2b_{SRR_ID}_{genome_ID}.err.log"
+        stdout = "data/{run_ID}/logs/samtools-convert2b-{SRR_ID}-{genome_ID}.log",
+        stderr = "data/{run_ID}/logs/samtools-convert2b-{SRR_ID}-{genome_ID}.err.log"
     conda:
         "manual-samtools"
     shell:
@@ -21,14 +21,14 @@ rule samtools_convert_to_bam:
 rule samtools_sort:
 ## samtools_sort                                : Sort bam file
     input:
-        mapped_reads_bam_unsorted_in = "data/{run_ID}/mappings/unsorted_{SRR_ID}_{genome_ID}.bam"
+        mapped_reads_bam_unsorted_in = "data/{run_ID}/mappings/{SRR_ID}-{genome_ID}.unsorted.bam"
     output:
-        mapped_reads_bam_sorted_out = "data/{run_ID}/mappings/{SRR_ID}_{genome_ID}.sorted.bam"
+        mapped_reads_bam_sorted_out = "data/{run_ID}/mappings/{SRR_ID}-{genome_ID}.sorted.bam"
     wildcard_constraints:
         SRR_ID = r"SRR\d{6,10}"
     log:
-        stdout="data/{run_ID}/logs/samtools_sort_{SRR_ID}_{genome_ID}.log",
-        stderr="data/{run_ID}/logs/samtools_sort_{SRR_ID}_{genome_ID}.err.log"
+        stdout = "data/{run_ID}/logs/samtools-sort-{SRR_ID}-{genome_ID}.log",
+        stderr = "data/{run_ID}/logs/samtools-sort-{SRR_ID}-{genome_ID}.err.log"
     conda:
         "manual-samtools"
     shell:
