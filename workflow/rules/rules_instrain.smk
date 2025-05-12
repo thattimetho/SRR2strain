@@ -21,7 +21,7 @@ rule instrain_run:
         stdout="data/{run_ID}/logs/instrain_{SRR_ID}_{genome_ID}.log",
         stderr="data/{run_ID}/logs/instrain_{SRR_ID}_{genome_ID}.err.log"
     threads:
-        max(workflow.cores/2, 4)
+        4
     conda:
         "manual-instrain"
     shell:
@@ -42,7 +42,7 @@ rule phabox_lifestyle_inference:
         stdout="data/{run_ID}/logs/phabox2_{genome_ID}.log",
         stderr="data/{run_ID}/logs/phabox2_{genome_ID}.err.log"
     threads:
-        max(workflow.cores/2, 4)
+        min(workflow.cores/2, 4)
     conda:
         "manual-phabox"
     shell:
