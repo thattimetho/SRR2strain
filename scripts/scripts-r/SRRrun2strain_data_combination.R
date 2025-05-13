@@ -8,7 +8,6 @@ setwd(wd)
 set.seed(1)
 options(scipen = 6)
 bg_color <- "grey97"
-font_family <- "Fira Sans"
 
 # Install all necessary packages
 install <- FALSE
@@ -100,10 +99,10 @@ for (SRR_i in 1:length(input.files.SRR.vector)){
         dplyr::filter(nucl_diversity_rarefied > 0) %>%
         dplyr::filter(Type %in% c("virulent", "temperate")) %>%
         dplyr::mutate(Type = as.factor(Type)) %>%
-        dplyr::filter(breadth > 0.8 & coverage > 10 & PhaTYPScore > 0.8)
+        dplyr::filter(breadth > 0.8 & coverage > 10 & PhaTYPScore > 0.9)
     
     rm(list = c("raw.instrain.data", "clean.instrain.data"))
-    ###
+    #####
     # clean.data %>%
     #     ggplot( aes(x = coverage, y = breadth, color = Type)) +
     #     geom_point() +
@@ -170,21 +169,18 @@ for (SRR_i in 1:length(input.files.SRR.vector)){
     #     ggplot( aes(x = relative_divergent_site_count, fill = Type)) +
     #     geom_density(alpha = 0.5)
     
+    #####
     # Statistics
     tmp.virulent.wt <- dplyr::filter(clean.data, Type == "virulent")$nucl_diversity_rarefied
     tmp.temperate.wt <- dplyr::filter(clean.data, Type == "temperate")$nucl_diversity_rarefied
     
-    if (!length(tmp.temperate.wt) > 50 | !length(tmp.virulent.wt) > 50){
+    if (!length(tmp.temperate.wt) > 100 | !length(tmp.virulent.wt) > 100){
+        rm(list = c("clean.data", "tmp.temperate.wt",
+                    "tmp.virulent.wt",
+                    "temp.SRR_ID", "temp_instrain_dir"))
         next
     }
     
-    # cat(c(temp.SRR_ID, "\n"))
-    # cat(paste(paste("Sample size virulent:", length(tmp.virulent.wt), sep = " "),
-    #           paste("Median virulent nucl. diversity:", median(tmp.virulent.wt), "\n", sep = " "),
-    #           sep = ", "))
-    # cat(paste(paste("Sample size temperate:", length(tmp.temperate.wt), sep = " "),
-    #           paste("Median temperate nucl. diversity:", median(tmp.temperate.wt), "\n", sep = " "),
-    #           sep = ", "))
     tmp.wilcox.test <- wilcox.test(tmp.virulent.wt, tmp.temperate.wt, conf.int = T)
     
     # Transpose and construct df for addition to main df
@@ -249,25 +245,29 @@ main.clean.stat.data.new <- main.clean.stat.data %>%
 # Draw plot
 plot.data <- main.clean.data.plot %>%
     ggplot( aes(x = SRR_ID, y = value, group = lifestyle)) +
-    stat_interval(position = position_dodgejust(width = 0.8), linewidth = 3, width = 1, show.legend = NA,
+    stat_interval(position = position_dodgejust(width = 0.8), linewidth = 5, width = 1, show.legend = NA,
                   colour = c(rep(MetBrewer::met.brewer("OKeeffe2", n = 3, direction = -1), length(main.clean.stat.data.new$SRR_ID)), 
                              rep(MetBrewer::met.brewer("Peru2", n = 3), length(main.clean.stat.data.new$SRR_ID)))) +
     stat_summary(geom = "point", fun = median, position = position_dodgejust(width = 0.8), colour = "white") +
     stat_summary(geom = "point", fun = mean, position = position_dodgejust(width = 0.8), colour = "white", shape = 17) +
     geom_text(inherit.aes = F, data = main.clean.stat.data.new, 
-              aes(x = SRR_ID, y = max(quant95)*0.9, label = markup)) +
+              aes(x = SRR_ID, y = 0.00015, label = markup)) +
     coord_flip(clip = "on") +
-    scale_y_continuous(transform = log2_trans(),
-                       breaks = trans_breaks("log2", function(x) 2^x),
-                       labels = trans_format("log2", math_format(2^.x))) +
+    scale_y_log10(guide = "axis_logticks") +
+    # scale_y_continuous(transform = log2_trans(),
+    #                    guide = "axis_logticks",
+    #                    breaks = trans_breaks("log2", function(x) 2^x),
+    #                    labels = trans_format("log2", math_format(2^.x))) +
     theme_classic() +
     theme(plot.background = element_rect(color = NA, fill = bg_color),
           panel.grid.major.y = element_line(linewidth = 1, linetype = 2),
-          axis.text.y = element_text(hjust = 0)) +
-    scale_y_continuous(n.breaks = 10) +
+          axis.text.y = element_text(hjust = 0)) + #,
+          #text = element_text(family = "Roboto", size = 8, color = "black")) +
+    #scale_y_continuous(n.breaks = 10) +
     labs(y = "Microdiversity (\u03c0)",
          x = "SRR IDs")
 plot.data
+
 
 
 

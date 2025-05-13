@@ -49,7 +49,7 @@ rule bowtie2_map:
         stdout = "data/{run_ID}/logs/bowtie2_{SRR_ID}_{genome_ID}.log",
         stderr = "data/{run_ID}/logs/bowtie2_{SRR_ID}_{genome_ID}.err.log"
     threads:
-        max(workflow.cores/2, 4)
+        min(workflow.cores/2, 4)
     conda:
         "manual-tools"
     shell:
