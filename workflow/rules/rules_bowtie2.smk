@@ -13,7 +13,7 @@ rule bowtie2_index_db:
                                   genome_ID = config["metadata_settings"]["genome_ID"])
     params:
         index_name = config["metadata_settings"]["genome_ID"],
-        index_dir = lambda wildcards: wildcards.genome_index_dir
+        index_dir = config["metadata_settings"]["index_dir"]
     wildcard_constraints:
         SRR_ID = r"SRR\d{6,10}"
     log:
