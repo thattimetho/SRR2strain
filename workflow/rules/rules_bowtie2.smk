@@ -41,7 +41,7 @@ rule bowtie2_map:
     output:
         mapped_reads_sam_unsorted_out = temp("data/{run_ID}/mappings/{SRR_ID}-{genome_ID}.unsorted.sam"),
     params:
-        genome_index_in = expand("data/{genome_index_dir}/{genome_ID}_index",
+        genome_index_in = expand("data/{genome_index_dir}/{genome_ID}-index",
                                  genome_index_dir = config["data_dir_settings"]["index_dir"],
                                  genome_ID = config["metadata_settings"]["genome_ID"])
     wildcard_constraints:
