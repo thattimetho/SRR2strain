@@ -12,7 +12,8 @@ rule bowtie2_index_db:
                                   genome_index_dir = config["data_dir_settings"]["index_dir"],
                                   genome_ID = config["metadata_settings"]["genome_ID"])
     params:
-        index_name = config["metadata_settings"]["genome_ID"]
+        index_name = config["metadata_settings"]["genome_ID"],
+        index_dir = lambda wildcards: wildcards.genome_index_dir
     wildcard_constraints:
         SRR_ID = r"SRR\d{6,10}"
     log:
@@ -27,7 +28,7 @@ rule bowtie2_index_db:
     conda:
         "manual-tools"
     shell:
-        "bowtie2-build --threads {threads} {input.genome_db_in} {params.index_name}-index > {log.stdout} 2> {log.stderr}"
+        "bowtie2-build --threads {threads} {input.genome_db_in} data/{params.index_dir}/{params.index_name}-index > {log.stdout} 2> {log.stderr}"
 
 rule bowtie2_map:
 ## bowtie2_map                                  : Map reads unto reference genome database
