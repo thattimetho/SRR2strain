@@ -27,7 +27,7 @@ rule bowtie2_index_db:
     conda:
         "manual-tools"
     shell:
-        "bowtie2-build --threads {threads} {input.genome_db_in} {params.index_name}_index > {log.stdout} 2> {log.stderr}"
+        "bowtie2-build --threads {threads} {input.genome_db_in} {params.index_name}-index > {log.stdout} 2> {log.stderr}"
 
 rule bowtie2_map:
 ## bowtie2_map                                  : Map reads unto reference genome database
