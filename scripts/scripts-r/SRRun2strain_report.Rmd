@@ -1,0 +1,150 @@
+---
+title: "SRRun2strain_output"
+author: "snakemake"
+date: "`r Sys.Date()`"
+params:
+  instrain_dir: instrain_santosviromes
+  lifestyle_file: santosviromes_phatyp_prediction.tsv
+  working_dir: /Users/thomasdebruijn/Documents/PhD/R_PhD
+  data_dir: /Users/thomasdebruijn/Documents/PhD/DATASETS
+  bioproject_id: PRJNA646773
+  install: False
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: rows
+    vertical_layout: scroll
+    source_code: embed
+    favicon: "table-solid.svg"
+---
+
+```{r setup, include=FALSE, echo=F}
+knitr::opts_chunk$set(echo = TRUE)
+
+# Run script
+master_script.file <- "SRRrun2strain_data_combination.R"
+master_script.data <- readLines(master_script.file)
+
+print(params$instrain_dir)
+
+# Overload commandArgs function with our params
+commandArgs_custom <- list(
+    instrain_dir = params$instrain_dir,
+    lifestyle_file = params$lifestyle_file,
+    wd = params$working_dir,
+    data_wd = params$data_dir,
+    install = params$install,
+    bioproject_id = params$bioproject_id
+)
+
+# Run our r master script with our parameters (implicit)
+source(master_script.file, local = knitr::knit_global())
+```
+
+# General info
+
+```{r info function block, include=F}
+# Declare functions
+computeSamplesTotal = function(temp.data.stat){
+  return(length(unique(temp.data.stat$SRR_ID)))
+}
+computevOTUsTotal = function(temp.clean.data){
+  return(length(unique(temp.clean.data$genome_ID)))
+} 
+
+
+```
+
+## Row 1
+
+### Samples (SRR_IDs) in dataset
+
+```{r, echo=F}
+total.samples = computeSamplesTotal(main.clean.stat.data)
+valueBox(total.samples, icon = "fa-solid fa-dna")
+```
+
+### vOTUs in dataset
+
+```{r, echo=F}
+total.vOTUs = computevOTUsTotal(main.clean.data)
+valueBox(total.vOTUs, icon = "fa-solid fa-chart-line")
+```
+
+### Samples in dataset
+
+```{r, echo=F}
+valueBox(value = commandArgs_custom$bioproject_id, icon = "fa-solid fa-hashtag", 
+         caption = commandArgs_custom$instrain_dir)
+```
+
+## Row 2 {data-height="600"}
+
+### Table containing quick statistics {data-width="250"}
+
+```{r Summary statistics whole dataset by lifestyle, echo=F}
+rmarkdown::paged_table(main.data.summary.stats, options = list(rows.print = 30,
+                                                               cols.print = 15,
+                                                               max.print = 300))
+```
+
+### Aditional file info {data-width="300" max-width="300"}
+
+Data was generated using the SRRun2strain snakemake pipeline. More information on output files can be found under the **meta-data** tab. Visualisations based on main output files are contained within this report, as well as some example data in tabular format.
+
+For more information on the workings of the pipeline, go to the [git repo](https://git.wur.nl/thomas.debruijn/srr2instrain). The various scripts used in this pipeline are also explained there.
+
+This is the **general info** tab, containing an overview of the dataset.
+
+# Tabular data
+
+### Statistics on per sample basis
+
+```{r table clean statistics data, echo=F}
+rmarkdown::paged_table(main.clean.stat.data, options = list(rows.print = 30,
+                                                               cols.print = 15,
+                                                               max.print = 300))
+```
+
+# Plot data
+
+## Row 1 {.tabset .tabset-fade data-height="2000"}
+
+### Total samples microdiversity plot
+
+```{r SRR ID microdiversity plot, echo=F, fig.dpi=400, fig.height=20, fig.width=8, fig.align='center'}
+p.interval.microdiversity_bysample
+```
+
+### Mapping stats by SRR_ID plot
+
+#### 
+
+##### 
+
+```{r SRR ID breadth plot, echo=F, fig.height=6.5}
+ggplotly(p.bar.breadth_bysample)
+```
+
+##### 
+
+```{r SRR ID coverage plot, echo=F, fig.height=6.5}
+ggplotly(p.bar.coverage_bysample)
+```
+
+##### 
+
+```{r SRR ID length plot, echo=F, fig.height=6.5}
+ggplotly(p.bar.length_bysample)
+```
+
+# Meta-data
+
+Scripts and related information used to analyze data used in this report. Source code for the rmarkdown file can be found in the upper right corner.
+
+## Row 1 {.tabset data-height="1000"}
+
+### R master script
+
+```{r source-code master script, echo=F, attr.output='style="max-height: 100%;"'}
+cat(master_script.data, sep = "\n")
+```
