@@ -50,4 +50,28 @@ rule phabox_lifestyle_inference:
         phabox2 --task phatyp --threads {threads} --dbdir --outpth {params.phabox_dir_out} \
         --contigs {input.genome_db_in} > {log.stdout} 2> {log.stderr}
         """
+
+rule checkv_completeness_check:
+## checkv_completeness_check                    : Predict phage genome completeness using CheckV
+    input:
+        genome_db_in = expand("data/{genome_fasta_dir}/{genome_ID}.fa",
+                              genome_fasta_dir = config["data_dir_settings"]["genome_dir"],
+                              genome_ID = config["metadata_settings"]["genome_ID"])
+    params:
+        dataset_id_out = config["metadata_settings"]["dataset_ID"],
+        checkv_db_dir = config["database_dir_settings"]["checkv_db_dir"],
+        checkv_out_dir = config["data_dir_settings"]["checkv_dir"]
+    output:
+        genome_check_out = expand("data/{genome_fasta_dir}/checkv_{dataset_id_out}/quality_summary.tsv",
+                                  genome_checkv_dir = config["data_dir_settings"]["checkv_dir"],
+                                  dataset_id_out = config["metadata_settings"]["dataset_ID"])
+    threads:
+        workflow.cores
+    conda:
+        "manual-checkv"
+    shell:
+        """
+        checkv end_to_end {input.genome_db_in} data/{params.checkv_out_dir}/checkv_{params.dataset_id_out} \
+        -t {threads} -d {params.checkv_db_dir}"
+        """
 ##
