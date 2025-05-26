@@ -3,8 +3,10 @@ title: "SRRun2strain_output"
 author: "snakemake"
 date: "`r Sys.Date()`"
 params:
-  instrain_dir: instrain_santosviromes
-  lifestyle_file: santosviromes_phatyp_prediction.tsv
+  project_id: landuse
+  instrain_dir: instrain
+  lifestyle_file: phatyp_prediction.tsv
+  checkv_file: quality_summary.tsv
   working_dir: /Users/thomasdebruijn/Documents/PhD/R_PhD
   data_dir: /Users/thomasdebruijn/Documents/PhD/DATASETS
   bioproject_id: PRJNA646773
@@ -28,8 +30,9 @@ print(params$instrain_dir)
 
 # Overload commandArgs function with our params
 commandArgs_custom <- list(
-    instrain_dir = params$instrain_dir,
-    lifestyle_file = params$lifestyle_file,
+    instrain_dir = paste(params$instrain_dir, params$project_id, sep = "_"),
+    lifestyle_file = paste(params$project_id, params$lifestyle_file, sep = "_"),
+    checkv_file = paste(params$project_id, params$checkv_file, sep = "_"),
     wd = params$working_dir,
     data_wd = params$data_dir,
     install = params$install,

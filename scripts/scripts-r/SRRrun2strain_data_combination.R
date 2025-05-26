@@ -6,6 +6,7 @@ rm(list = setdiff(ls(), c("master_script.data", "commandArgs_custom")))
 # commandArgs_custom <- list(
 #   instrain_dir = "instrain_landuse_v2",
 #   lifestyle_file = "landuse_phatyp_prediction.tsv",
+#   checkv_file = "landuse_quality_summary.tsv",
 #   wd = "/Users/thomasdebruijn/Documents/PhD/R_PhD",
 #   data_wd = "/Users/thomasdebruijn/Documents/PhD/DATASETS",
 #   install = F
@@ -71,6 +72,7 @@ setwd(wd)
 data_wd <- sys.args$data_wd
 input.file.instrain.dir <- sys.args$instrain_dir
 input.file.lifestyle.name <- sys.args$lifestyle_file
+input.file.checkv.name <- sys.args$checkv_file
 bioproject_ID <- sys.args$bioproject_id
 
 #####
@@ -87,6 +89,15 @@ clean.lifestyle.data <- raw.lifestyle.data %>%
   dplyr::mutate(Type = as.factor(TYPE), .keep = "unused") %>%
   dplyr::mutate(Accession = str_split_i(Accession, "_length_", i = 1))
 rm("raw.lifestyle.data")
+
+# Load CheckV predictions and clean
+raw.checkv.data <- read.csv(file = paste(data_wd, input.file.checkv.name, sep = "/"), 
+                            sep = "\t", header = T)
+
+clean.checkv.data <- raw.checkv.data %>%
+  dplyr::mutate(contig_id = str_split_i(contig_id, "_length_", i = 1)) %>%
+  dplyr::select(contig_id, completeness)
+rm("raw.checkv.data")
 
 # Setup main data structures
 main.list.clean.data <- list()
@@ -123,9 +134,11 @@ for (SRR_i in 1:length(input.files.SRR.vector)){
     dplyr::distinct(short_genome_ID, .keep_all = T) %>%
     dplyr::inner_join(clean.lifestyle.data, by = join_by(short_genome_ID == Accession), 
                       keep = F, relationship = "one-to-one", multiple = "any") %>%
+    dplyr::inner_join(clean.checkv.data, by = join_by(short_genome_ID == contig_id),
+                      keep = F, relationship = "one-to-one", multiple = "any") %>%
     dplyr::filter(Type %in% c("virulent", "temperate")) %>%
     dplyr::mutate(Type = as.factor(Type)) %>%
-    dplyr::filter(breadth > 0.8 & coverage > 10 & PhaTYPScore > 0.8)
+    dplyr::filter(breadth > 0.8 & coverage > 5 & completeness > 80)
   
   rm(list = c("raw.instrain.data", "clean.instrain.data"))
   #####
@@ -232,7 +245,7 @@ main.data.summary.stats <- main.clean.data %>%
                       names_to = "variable", values_to = "value")
 
 # Statistics markup
-main.clean.stat.data$wilcox_pvalue <- p.adjust(main.clean.stat.data$wilcox_pvalue, method = "none")
+main.clean.stat.data$wilcox_pvalue <- p.adjust(main.clean.stat.data$wilcox_pvalue, method = "BH")
 main.clean.stat.data.new <- main.clean.stat.data %>%
   dplyr::mutate(markup = ifelse(wilcox_pvalue > 0.05, "",
                                 ifelse(wilcox_pvalue > 0.01, "*",
@@ -359,11 +372,11 @@ p.interval.microdiversity_bysample <- main.clean.data.plot %>%
 # #legend.plot.data
 # p.interval.microdiversity_bysample + inset_element(legend.plot.data, l = 0.75, r = 0.99, t = 0.22, b = 0.08, clip = F, align_to = "full")
 
-ggsave(filename = paste(wd, paste0(input.file.instrain.dir, "_hist_plot.png"), sep = "/"),
-       plot = p.interval.microdiversity_bysample,
-       width = 1500, height = 3000,
-       units = "px",
-       scale = 2)
+# ggsave(filename = paste(wd, paste0(input.file.instrain.dir, "_hist_plot.png"), sep = "/"),
+#        plot = p.interval.microdiversity_bysample,
+#        width = 1500, height = 3000,
+#        units = "px",
+#        scale = 2)
 
 
 
