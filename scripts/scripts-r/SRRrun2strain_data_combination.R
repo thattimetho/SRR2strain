@@ -4,8 +4,9 @@
 rm(list = setdiff(ls(), c("master_script.data", "commandArgs_custom")))
 
 # commandArgs_custom <- list(
-#   instrain_dir = "instrain_glacial",
-#   lifestyle_file = "glacial_phatyp_prediction.tsv",
+#   instrain_dir = "instrain_landuse_v2",
+#   lifestyle_file = "landuse_phatyp_prediction.tsv",
+#   checkv_file = "landuse_quality_summary.tsv",
 #   wd = "/Users/thomasdebruijn/Documents/PhD/R_PhD",
 #   data_wd = "/Users/thomasdebruijn/Documents/PhD/DATASETS",
 #   install = F
@@ -71,6 +72,7 @@ setwd(wd)
 data_wd <- sys.args$data_wd
 input.file.instrain.dir <- sys.args$instrain_dir
 input.file.lifestyle.name <- sys.args$lifestyle_file
+input.file.checkv.name <- sys.args$checkv_file
 bioproject_ID <- sys.args$bioproject_id
 
 #####
@@ -88,18 +90,25 @@ clean.lifestyle.data <- raw.lifestyle.data %>%
   dplyr::mutate(Accession = str_split_i(Accession, "_length_", i = 1))
 rm("raw.lifestyle.data")
 
+# Load CheckV predictions and clean
+raw.checkv.data <- read.csv(file = paste(data_wd, input.file.checkv.name, sep = "/"), 
+                            sep = "\t", header = T)
+
+clean.checkv.data <- raw.checkv.data %>%
+  dplyr::mutate(contig_id = str_split_i(contig_id, "_length_", i = 1)) %>%
+  dplyr::select(contig_id, completeness)
+rm("raw.checkv.data")
+
 # Setup main data structures
 main.list.clean.data <- list()
 main.clean.data <- data.frame(matrix(ncol = 4, nrow = 0))
 main.clean.stat.data <- data.frame(matrix(ncol = 15, nrow = 0))
-main.raw.stat.data.all <- data.frame(matrix(ncol = 13, nrow = 0))
 colnames(main.clean.data) <- c("SRR_ID","genome_ID","variable","value")
 
 #####
 # Loading data in data loop
 for (SRR_i in 1:length(input.files.SRR.vector)){
   skip_to_next <<- F
-  
   # Set keys
   temp.SRR_ID <- input.files.SRR.vector[SRR_i]
   temp_instrain_dir <- input.files.instrain.list[SRR_i]
@@ -110,6 +119,7 @@ for (SRR_i in 1:length(input.files.SRR.vector)){
                                                paste0(temp_instrain_dir, "_scaffold_info.tsv"), sep = "/"), 
                                   sep = "\t", header = T)
   }, error = function(e) {skip_to_next <<- TRUE})
+  
   if(skip_to_next){
     rm(skip_to_next)
     next
@@ -120,15 +130,15 @@ for (SRR_i in 1:length(input.files.SRR.vector)){
     dplyr::mutate(short_genome_ID = str_split_i(scaffold, "_length_", i = 1), .after = 1) %>%
     dplyr::mutate(short_genome_ID = str_split_i(short_genome_ID, "\\|\\|", i = 1))
   
-  tmp.clean.data.all <- clean.instrain.data %>%
+  tmp.clean.data <- clean.instrain.data %>%
     dplyr::distinct(short_genome_ID, .keep_all = T) %>%
     dplyr::inner_join(clean.lifestyle.data, by = join_by(short_genome_ID == Accession), 
                       keep = F, relationship = "one-to-one", multiple = "any") %>%
-    dplyr::mutate(Type = as.factor(Type))
-  
-  tmp.clean.data <- tmp.clean.data.all %>%
+    dplyr::inner_join(clean.checkv.data, by = join_by(short_genome_ID == contig_id),
+                      keep = F, relationship = "one-to-one", multiple = "any") %>%
     dplyr::filter(Type %in% c("virulent", "temperate")) %>%
-    dplyr::filter(breadth > 0.8 & coverage > 10 & PhaTYPScore > 0.8)
+    dplyr::mutate(Type = as.factor(Type)) %>%
+    dplyr::filter(breadth > 0.8 & coverage > 5 & completeness > 80)
   
   rm(list = c("raw.instrain.data", "clean.instrain.data"))
   #####
@@ -143,6 +153,8 @@ for (SRR_i in 1:length(input.files.SRR.vector)){
   tmp.p.point.phatypscore_length_byType <- tmp.clean.data %>%
       ggplot( aes(x = PhaTYPScore, y = Length, color = Type)) +
       geom_point(alpha = 0.7)
+  
+  #var.test(nucl_diversity_rarefied ~ Type, data = clean.data)
   
   #####
   # Statistics
@@ -171,7 +183,6 @@ for (SRR_i in 1:length(input.files.SRR.vector)){
                                  "breadth", "coverage"),
                         names_to = "variable", values_to = "value")
   
-  # Calculate summary stats on lifestyle data
   tmp.summary.stats <- tmp.clean.data %>%
     dplyr::group_by(SRR_ID, lifestyle) %>%
     dplyr::summarise(count = n(),
@@ -189,37 +200,16 @@ for (SRR_i in 1:length(input.files.SRR.vector)){
     dplyr::mutate(wilcox_estimate = round(tmp.wilcox.test$estimate, digits = 5)) %>%
     dplyr::mutate(lifestyle_ratio = length(tmp.temperate.wt)/length(tmp.virulent.wt), .after = count)
   
-  # Calculate summary stats on raw data
-  tmp.summary.stats.raw <- tmp.clean.data.all %>%
-    dplyr::rename(genome_ID = short_genome_ID,
-                  lifestyle = Type,
-                  nucl_diversity = nucl_diversity) %>%
-    dplyr::mutate(SRR_ID = temp.SRR_ID, .before = 1) %>%
-    dplyr::group_by(SRR_ID, lifestyle) %>%
-    dplyr::summarise(count = n(),
-                     avg_length = mean(length),
-                     med_length = median(length),
-                     avg_nucl_diversity = mean(nucl_diversity, na.rm = T),
-                     med_nucl_diversity = median(nucl_diversity, na.rm = T),
-                     avg_breadth = mean(breadth),
-                     med_breadth = median(breadth),
-                     avg_coverage = mean(coverage),
-                     med_coverage = median(coverage),
-                     quant95 = quantile(nucl_diversity, probs = 0.95, na.rm = T),
-                     .groups = "keep")
-  
   # Save data in main variables
-  main.list.clean.data[[temp.SRR_ID]][["raw_data"]] <- tmp.clean.data.all
-  main.list.clean.data[[temp.SRR_ID]][["filtered_data"]] <- tmp.clean.data
+  main.list.clean.data[[temp.SRR_ID]][["raw_data"]] <- tmp.clean.data
   main.list.clean.data[[temp.SRR_ID]][["plots"]] <- list(p.point.coverage_breadth_byType = tmp.p.point.coverage_breadth_byType,
                                                          p.box.length_byType = tmp.p.box.length_byType,
                                                          p.point.phatypscore_length_byType = tmp.p.point.phatypscore_length_byType)
   main.clean.data <- rbind(main.clean.data, tmp.clean.data.long)
   main.clean.stat.data <- rbind(main.clean.stat.data, tmp.summary.stats)
-  main.raw.stat.data.all <- rbind(main.raw.stat.data.all, tmp.summary.stats.raw)
   
-  rm(list = c("tmp.clean.data", "tmp.temperate.wt", "tmp.clean.data.all",
-              "tmp.virulent.wt", "tmp.clean.data.long", "tmp.summary.stats.raw",
+  rm(list = c("tmp.clean.data", "tmp.temperate.wt",
+              "tmp.virulent.wt", "tmp.clean.data.long",
               "temp.SRR_ID", "temp_instrain_dir",
               "tmp.summary.stats", "tmp.wilcox.test",
               "tmp.p.point.coverage_breadth_byType","tmp.p.box.length_byType",
@@ -255,7 +245,7 @@ main.data.summary.stats <- main.clean.data %>%
                       names_to = "variable", values_to = "value")
 
 # Statistics markup
-main.clean.stat.data$wilcox_pvalue <- p.adjust(main.clean.stat.data$wilcox_pvalue, method = "none")
+main.clean.stat.data$wilcox_pvalue <- p.adjust(main.clean.stat.data$wilcox_pvalue, method = "BH")
 main.clean.stat.data.new <- main.clean.stat.data %>%
   dplyr::mutate(markup = ifelse(wilcox_pvalue > 0.05, "",
                                 ifelse(wilcox_pvalue > 0.01, "*",
@@ -318,7 +308,7 @@ p.interval.microdiversity_bysample <- main.clean.data.plot %>%
         axis.text.y = element_text(hjust = 0),
         plot.title.position = "plot")
 #p.interval.microdiversity_bysample
-# 
+
 # legend.plot.data <- main.clean.data.plot %>%
 #   dplyr::filter(value > 0 & SRR_ID == "SRR14194044") %>%
 #   ggplot( aes(x = reorder(SRR_ID, value), y = value, group = lifestyle)) +
@@ -343,7 +333,7 @@ p.interval.microdiversity_bysample <- main.clean.data.plot %>%
 #     inherit.aes = F,
 #     data = data.frame(
 #       xend = c(1.6, 1.6, 0.65, 0.65, 1.6, 1.6, 0.7),
-#       x = c(1.15, 0.95, 1.025, 0.85, 1.15, 0.95, 1.05),
+#       x = c(1.15, 0.95, 1.025, 0.85, 1.15, 0.95, 1.05), 
 #       yend = c(0.009, 0.009, 0.0045, 0.0045, 0.002, 0.002, 0.001),
 #       y = c(0.012, 0.011, 0.0055, 0.0055, 0.0035, 0.003, 0.0017)),
 #     aes(x = x, xend = xend, y = y, yend = yend),
@@ -362,7 +352,7 @@ p.interval.microdiversity_bysample <- main.clean.data.plot %>%
 #     inherit.aes = F,
 #     data = data.frame(
 #       x = c(1.4, 0.6),
-#       xend = c(1.12, 0.88),
+#       xend = c(1.12, 0.88), 
 #       y = c(0.03, 0.03),
 #       yend = c(0.016, 0.016)),
 #     aes(x = x, xend = xend, y = y, yend = yend),
@@ -380,49 +370,14 @@ p.interval.microdiversity_bysample <- main.clean.data.plot %>%
 #         plot.title = element_text(hjust = 0.01))
 # 
 # #legend.plot.data
-# p.interval.microdiversity_bysample + inset_element(legend.plot.data, l = 0.80, r = 0.99, t = 0.25, b = 0.10, clip = F, align_to = "full")
-# 
+# p.interval.microdiversity_bysample + inset_element(legend.plot.data, l = 0.75, r = 0.99, t = 0.22, b = 0.08, clip = F, align_to = "full")
+
 # ggsave(filename = paste(wd, paste0(input.file.instrain.dir, "_hist_plot.png"), sep = "/"),
-#        plot = p.interval.microdiversity_bysample + inset_element(legend.plot.data, l = 0.80, r = 0.999, t = 0.25, b = 0.10, clip = F, align_to = "full"),
-#        width = 2000, height = 2200,
+#        plot = p.interval.microdiversity_bysample,
+#        width = 1500, height = 3000,
 #        units = "px",
-#        scale = 1.7)
+#        scale = 2)
 
-p.box.length_bylifestyle <- main.clean.data %>%
-  dplyr::filter(variable == "length") %>%
-  ggplot( aes(x = lifestyle, y = value, colour = lifestyle)) +
-  geom_boxplot(alpha = 0.8) +
-  coord_flip() +
-  scale_y_continuous(n.breaks = 10, ) +
-  labs(title = "Distribution of genome (vOTU) lengths per lifestyle",
-       subtitle = "data of all samples combined",
-       x = "Lifestyle", y = "Genome length (vOTU)") +
-  theme(plot.title.position = "plot",
-        legend.position = "none",
-        axis.text.x = element_text(angle = -40))
 
-p.box.coverage_bylifestyle <- main.clean.data %>%
-  dplyr::filter(variable == "coverage") %>%
-  ggplot( aes(x = lifestyle, y = value, colour = lifestyle)) +
-  geom_boxplot(alpha = 0.8) +
-  coord_flip() +
-  scale_y_continuous(n.breaks = 10, ) +
-  labs(title = "Distribution of genome (vOTU) coverage per lifestyle",
-       subtitle = "data of all samples combined",
-       x = "Lifestyle", y = "Genome coverage (x times)") +
-  theme(plot.title.position = "plot",
-        legend.position = "none",
-        axis.text.x = element_text(angle = -40))
 
-p.box.breadth_bylifestyle <- main.clean.data %>%
-  dplyr::filter(variable == "breadth") %>%
-  ggplot( aes(x = lifestyle, y = value, colour = lifestyle)) +
-  geom_boxplot(alpha = 0.8) +
-  coord_flip() +
-  scale_y_continuous(n.breaks = 10, ) +
-  labs(title = "Distribution of genome (vOTU) coverage breadth per lifestyle",
-       subtitle = "data of all samples combined",
-       x = "Lifestyle", y = "Mapping/coverage breadth") +
-  theme(plot.title.position = "plot",
-        legend.position = "none",
-        axis.text.x = element_text(angle = -40))
+

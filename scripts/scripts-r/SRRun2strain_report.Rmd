@@ -1,13 +1,15 @@
 ---
-title: "glacial_SRRun2strain_output"
+title: "SRRun2strain_output"
 author: "snakemake"
 date: "`r Sys.Date()`"
 params:
-  instrain_dir: instrain_glacial_v2
-  lifestyle_file: glacial_phatyp_prediction.tsv
+  project_id: landuse
+  instrain_dir: instrain
+  lifestyle_file: phatyp_prediction.tsv
+  checkv_file: quality_summary.tsv
   working_dir: /Users/thomasdebruijn/Documents/PhD/R_PhD
   data_dir: /Users/thomasdebruijn/Documents/PhD/DATASETS
-  bioproject_id: PRJNA882246
+  bioproject_id: PRJNA646773
   install: False
 output: 
   flexdashboard::flex_dashboard:
@@ -28,12 +30,13 @@ print(params$instrain_dir)
 
 # Overload commandArgs function with our params
 commandArgs_custom <- list(
-  instrain_dir = params$instrain_dir,
-  lifestyle_file = params$lifestyle_file,
-  wd = params$working_dir,
-  data_wd = params$data_dir,
-  install = params$install,
-  bioproject_id = params$bioproject_id
+    instrain_dir = paste(params$instrain_dir, params$project_id, sep = "_"),
+    lifestyle_file = paste(params$project_id, params$lifestyle_file, sep = "_"),
+    checkv_file = paste(params$project_id, params$checkv_file, sep = "_"),
+    wd = params$working_dir,
+    data_wd = params$data_dir,
+    install = params$install,
+    bioproject_id = params$bioproject_id
 )
 
 # Run our r master script with our parameters (implicit)
@@ -45,10 +48,10 @@ source(master_script.file, local = knitr::knit_global())
 ```{r info function block, include=F}
 # Declare functions
 computeSamplesTotal = function(temp.data.stat){
-  return(length(unique(sort(temp.data.stat$SRR_ID))))
+  return(length(unique(temp.data.stat$SRR_ID)))
 }
 computevOTUsTotal = function(temp.clean.data){
-  return(length(unique(sort(temp.clean.data$genome_ID))))
+  return(length(unique(temp.clean.data$genome_ID)))
 } 
 
 
@@ -56,11 +59,11 @@ computevOTUsTotal = function(temp.clean.data){
 
 ## Row 1
 
-### Filtered samples (of total) in dataset
+### Samples (SRR_IDs) in dataset
 
 ```{r, echo=F}
 total.samples = computeSamplesTotal(main.clean.stat.data)
-valueBox(paste0(total.samples, " (", length(input.files.SRR.vector), ")"), icon = "fa-solid fa-dna")
+valueBox(total.samples, icon = "fa-solid fa-dna")
 ```
 
 ### vOTUs in dataset
@@ -95,24 +98,14 @@ For more information on the workings of the pipeline, go to the [git repo](https
 
 This is the **general info** tab, containing an overview of the dataset.
 
-# Tabular data 
+# Tabular data
 
-## Row 1 {.tabset .tabset-fade data-height="2000"}
-
-### Statistics on per sample basis (filtered)
+### Statistics on per sample basis
 
 ```{r table clean statistics data, echo=F}
 rmarkdown::paged_table(main.clean.stat.data, options = list(rows.print = 30,
-                                                            cols.print = 15,
-                                                            max.print = 300))
-```
-
-### Statistics on raw data per sample basis
-
-```{r table raw statistics data, echo=F}
-rmarkdown::paged_table(main.raw.stat.data.all, options = list(rows.print = 30,
-                                                              cols.print = 15,
-                                                              max.print = 300))
+                                                               cols.print = 15,
+                                                               max.print = 300))
 ```
 
 # Plot data
@@ -145,26 +138,6 @@ ggplotly(p.bar.coverage_bysample)
 
 ```{r SRR ID length plot, echo=F, fig.height=6.5}
 ggplotly(p.bar.length_bysample)
-```
-
-### Distributions by lifestyle
-
-##### 
-
-```{r length by lifestyle, echo=F, fig.height=3}
-ggplotly(p.box.length_bylifestyle)
-```
-
-##### 
-
-```{r coverage by lifestyle, echo=F, fig.height=3}
-ggplotly(p.box.coverage_bylifestyle)
-```
-
-##### 
-
-```{r breadth by lifestyle, echo=F, fig.height=3}
-ggplotly(p.box.breadth_bylifestyle)
 ```
 
 # Meta-data
