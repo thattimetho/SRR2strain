@@ -297,7 +297,7 @@ p.interval.microdiversity_bysample <- main.clean.data.plot %>%
   scale_y_log10(guide = "axis_logticks") +
   theme_classic() +
   labs(title = "Microdiversity levels based on per sample instrain data",
-       subtitle = "P values not(!) adjusted using BH method. \n *: p<0.05, **: p<0.01, ***: p<0.001, ****: p<0.0001",
+       subtitle = "P values adjusted using BH method. \n *: p<0.05, **: p<0.01, ***: p<0.001, ****: p<0.0001",
        y = "Microdiversity (\u03c0)",
        x = "SRR IDs",
        caption = paste(paste0("Data = ", input.file.instrain.dir),
@@ -308,7 +308,7 @@ p.interval.microdiversity_bysample <- main.clean.data.plot %>%
         axis.text.y = element_text(hjust = 0),
         plot.title.position = "plot")
 #p.interval.microdiversity_bysample
-
+# 
 # legend.plot.data <- main.clean.data.plot %>%
 #   dplyr::filter(value > 0 & SRR_ID == "SRR14194044") %>%
 #   ggplot( aes(x = reorder(SRR_ID, value), y = value, group = lifestyle)) +
@@ -333,7 +333,7 @@ p.interval.microdiversity_bysample <- main.clean.data.plot %>%
 #     inherit.aes = F,
 #     data = data.frame(
 #       xend = c(1.6, 1.6, 0.65, 0.65, 1.6, 1.6, 0.7),
-#       x = c(1.15, 0.95, 1.025, 0.85, 1.15, 0.95, 1.05), 
+#       x = c(1.15, 0.95, 1.025, 0.85, 1.15, 0.95, 1.05),
 #       yend = c(0.009, 0.009, 0.0045, 0.0045, 0.002, 0.002, 0.001),
 #       y = c(0.012, 0.011, 0.0055, 0.0055, 0.0035, 0.003, 0.0017)),
 #     aes(x = x, xend = xend, y = y, yend = yend),
@@ -352,7 +352,7 @@ p.interval.microdiversity_bysample <- main.clean.data.plot %>%
 #     inherit.aes = F,
 #     data = data.frame(
 #       x = c(1.4, 0.6),
-#       xend = c(1.12, 0.88), 
+#       xend = c(1.12, 0.88),
 #       y = c(0.03, 0.03),
 #       yend = c(0.016, 0.016)),
 #     aes(x = x, xend = xend, y = y, yend = yend),
@@ -370,14 +370,49 @@ p.interval.microdiversity_bysample <- main.clean.data.plot %>%
 #         plot.title = element_text(hjust = 0.01))
 # 
 # #legend.plot.data
-# p.interval.microdiversity_bysample + inset_element(legend.plot.data, l = 0.75, r = 0.99, t = 0.22, b = 0.08, clip = F, align_to = "full")
-
+# p.interval.microdiversity_bysample + inset_element(legend.plot.data, l = 0.80, r = 0.99, t = 0.25, b = 0.10, clip = F, align_to = "full")
+# 
 # ggsave(filename = paste(wd, paste0(input.file.instrain.dir, "_hist_plot.png"), sep = "/"),
-#        plot = p.interval.microdiversity_bysample,
-#        width = 1500, height = 3000,
+#        plot = p.interval.microdiversity_bysample + inset_element(legend.plot.data, l = 0.80, r = 0.999, t = 0.25, b = 0.10, clip = F, align_to = "full"),
+#        width = 2000, height = 2200,
 #        units = "px",
-#        scale = 2)
+#        scale = 1.7)
 
+p.box.length_bylifestyle <- main.clean.data %>%
+  dplyr::filter(variable == "length") %>%
+  ggplot( aes(x = lifestyle, y = value, colour = lifestyle)) +
+  geom_boxplot(alpha = 0.8) +
+  coord_flip() +
+  scale_y_continuous(n.breaks = 10, ) +
+  labs(title = "Distribution of genome (vOTU) lengths per lifestyle",
+       subtitle = "data of all samples combined",
+       x = "Lifestyle", y = "Genome length (vOTU)") +
+  theme(plot.title.position = "plot",
+        legend.position = "none",
+        axis.text.x = element_text(angle = -40))
 
+p.box.coverage_bylifestyle <- main.clean.data %>%
+  dplyr::filter(variable == "coverage") %>%
+  ggplot( aes(x = lifestyle, y = value, colour = lifestyle)) +
+  geom_boxplot(alpha = 0.8) +
+  coord_flip() +
+  scale_y_continuous(n.breaks = 10, ) +
+  labs(title = "Distribution of genome (vOTU) coverage per lifestyle",
+       subtitle = "data of all samples combined",
+       x = "Lifestyle", y = "Genome coverage (x times)") +
+  theme(plot.title.position = "plot",
+        legend.position = "none",
+        axis.text.x = element_text(angle = -40))
 
-
+p.box.breadth_bylifestyle <- main.clean.data %>%
+  dplyr::filter(variable == "breadth") %>%
+  ggplot( aes(x = lifestyle, y = value, colour = lifestyle)) +
+  geom_boxplot(alpha = 0.8) +
+  coord_flip() +
+  scale_y_continuous(n.breaks = 10, ) +
+  labs(title = "Distribution of genome (vOTU) coverage breadth per lifestyle",
+       subtitle = "data of all samples combined",
+       x = "Lifestyle", y = "Mapping/coverage breadth") +
+  theme(plot.title.position = "plot",
+        legend.position = "none",
+        axis.text.x = element_text(angle = -40))

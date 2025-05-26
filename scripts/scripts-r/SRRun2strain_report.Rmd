@@ -48,10 +48,10 @@ source(master_script.file, local = knitr::knit_global())
 ```{r info function block, include=F}
 # Declare functions
 computeSamplesTotal = function(temp.data.stat){
-  return(length(unique(temp.data.stat$SRR_ID)))
+  return(length(unique(sort(temp.data.stat$SRR_ID))))
 }
 computevOTUsTotal = function(temp.clean.data){
-  return(length(unique(temp.clean.data$genome_ID)))
+  return(length(unique(sort(temp.clean.data$genome_ID))))
 } 
 
 
@@ -59,11 +59,11 @@ computevOTUsTotal = function(temp.clean.data){
 
 ## Row 1
 
-### Samples (SRR_IDs) in dataset
+### Filtered samples (of total) in dataset
 
 ```{r, echo=F}
 total.samples = computeSamplesTotal(main.clean.stat.data)
-valueBox(total.samples, icon = "fa-solid fa-dna")
+valueBox(paste0(total.samples, " (", length(input.files.SRR.vector), ")"), icon = "fa-solid fa-dna")
 ```
 
 ### vOTUs in dataset
@@ -98,14 +98,24 @@ For more information on the workings of the pipeline, go to the [git repo](https
 
 This is the **general info** tab, containing an overview of the dataset.
 
-# Tabular data
+# Tabular data 
 
-### Statistics on per sample basis
+## Row 1 {.tabset .tabset-fade data-height="2000"}
+
+### Statistics on per sample basis (filtered)
 
 ```{r table clean statistics data, echo=F}
 rmarkdown::paged_table(main.clean.stat.data, options = list(rows.print = 30,
-                                                               cols.print = 15,
-                                                               max.print = 300))
+                                                            cols.print = 15,
+                                                            max.print = 300))
+```
+
+### Statistics on raw data per sample basis
+
+```{r table raw statistics data, echo=F}
+rmarkdown::paged_table(main.raw.stat.data.all, options = list(rows.print = 30,
+                                                              cols.print = 15,
+                                                              max.print = 300))
 ```
 
 # Plot data
@@ -140,6 +150,26 @@ ggplotly(p.bar.coverage_bysample)
 ggplotly(p.bar.length_bysample)
 ```
 
+### Distributions by lifestyle
+
+##### 
+
+```{r length by lifestyle, echo=F, fig.height=3}
+ggplotly(p.box.length_bylifestyle)
+```
+
+##### 
+
+```{r coverage by lifestyle, echo=F, fig.height=3}
+ggplotly(p.box.coverage_bylifestyle)
+```
+
+##### 
+
+```{r breadth by lifestyle, echo=F, fig.height=3}
+ggplotly(p.box.breadth_bylifestyle)
+```
+
 # Meta-data
 
 Scripts and related information used to analyze data used in this report. Source code for the rmarkdown file can be found in the upper right corner.
@@ -151,3 +181,4 @@ Scripts and related information used to analyze data used in this report. Source
 ```{r source-code master script, echo=F, attr.output='style="max-height: 100%;"'}
 cat(master_script.data, sep = "\n")
 ```
+
