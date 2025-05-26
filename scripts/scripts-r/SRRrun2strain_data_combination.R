@@ -103,12 +103,14 @@ rm("raw.checkv.data")
 main.list.clean.data <- list()
 main.clean.data <- data.frame(matrix(ncol = 4, nrow = 0))
 main.clean.stat.data <- data.frame(matrix(ncol = 15, nrow = 0))
+main.raw.stat.data.all <- data.frame(matrix(ncol = 13, nrow = 0))
 colnames(main.clean.data) <- c("SRR_ID","genome_ID","variable","value")
 
 #####
 # Loading data in data loop
 for (SRR_i in 1:length(input.files.SRR.vector)){
   skip_to_next <<- F
+
   # Set keys
   temp.SRR_ID <- input.files.SRR.vector[SRR_i]
   temp_instrain_dir <- input.files.instrain.list[SRR_i]
@@ -119,7 +121,6 @@ for (SRR_i in 1:length(input.files.SRR.vector)){
                                                paste0(temp_instrain_dir, "_scaffold_info.tsv"), sep = "/"), 
                                   sep = "\t", header = T)
   }, error = function(e) {skip_to_next <<- TRUE})
-  
   if(skip_to_next){
     rm(skip_to_next)
     next
@@ -130,14 +131,16 @@ for (SRR_i in 1:length(input.files.SRR.vector)){
     dplyr::mutate(short_genome_ID = str_split_i(scaffold, "_length_", i = 1), .after = 1) %>%
     dplyr::mutate(short_genome_ID = str_split_i(short_genome_ID, "\\|\\|", i = 1))
   
-  tmp.clean.data <- clean.instrain.data %>%
+  tmp.clean.data.all <- clean.instrain.data %>%
     dplyr::distinct(short_genome_ID, .keep_all = T) %>%
     dplyr::inner_join(clean.lifestyle.data, by = join_by(short_genome_ID == Accession), 
                       keep = F, relationship = "one-to-one", multiple = "any") %>%
     dplyr::inner_join(clean.checkv.data, by = join_by(short_genome_ID == contig_id),
                       keep = F, relationship = "one-to-one", multiple = "any") %>%
+    dplyr::mutate(Type = as.factor(Type))
+
+  tmp.clean.data <- tmp.clean.data.all %>%
     dplyr::filter(Type %in% c("virulent", "temperate")) %>%
-    dplyr::mutate(Type = as.factor(Type)) %>%
     dplyr::filter(breadth > 0.8 & coverage > 5 & completeness > 80)
   
   rm(list = c("raw.instrain.data", "clean.instrain.data"))
@@ -153,9 +156,7 @@ for (SRR_i in 1:length(input.files.SRR.vector)){
   tmp.p.point.phatypscore_length_byType <- tmp.clean.data %>%
       ggplot( aes(x = PhaTYPScore, y = Length, color = Type)) +
       geom_point(alpha = 0.7)
-  
-  #var.test(nucl_diversity_rarefied ~ Type, data = clean.data)
-  
+
   #####
   # Statistics
   tmp.virulent.wt <- dplyr::filter(tmp.clean.data, Type == "virulent")$nucl_diversity
@@ -183,6 +184,7 @@ for (SRR_i in 1:length(input.files.SRR.vector)){
                                  "breadth", "coverage"),
                         names_to = "variable", values_to = "value")
   
+  # Calculate summary stats on lifestyle data
   tmp.summary.stats <- tmp.clean.data %>%
     dplyr::group_by(SRR_ID, lifestyle) %>%
     dplyr::summarise(count = n(),
@@ -200,16 +202,37 @@ for (SRR_i in 1:length(input.files.SRR.vector)){
     dplyr::mutate(wilcox_estimate = round(tmp.wilcox.test$estimate, digits = 5)) %>%
     dplyr::mutate(lifestyle_ratio = length(tmp.temperate.wt)/length(tmp.virulent.wt), .after = count)
   
+  # Calculate summary stats on raw data
+  tmp.summary.stats.raw <- tmp.clean.data.all %>%
+    dplyr::rename(genome_ID = short_genome_ID,
+                  lifestyle = Type,
+                  nucl_diversity = nucl_diversity) %>%
+    dplyr::mutate(SRR_ID = temp.SRR_ID, .before = 1) %>%
+    dplyr::group_by(SRR_ID, lifestyle) %>%
+    dplyr::summarise(count = n(),
+                     avg_length = mean(length),
+                     med_length = median(length),
+                     avg_nucl_diversity = mean(nucl_diversity, na.rm = T),
+                     med_nucl_diversity = median(nucl_diversity, na.rm = T),
+                     avg_breadth = mean(breadth),
+                     med_breadth = median(breadth),
+                     avg_coverage = mean(coverage),
+                     med_coverage = median(coverage),
+                     quant95 = quantile(nucl_diversity, probs = 0.95, na.rm = T),
+                     .groups = "keep")
+
   # Save data in main variables
-  main.list.clean.data[[temp.SRR_ID]][["raw_data"]] <- tmp.clean.data
+  main.list.clean.data[[temp.SRR_ID]][["raw_data"]] <- tmp.clean.data.all
+  main.list.clean.data[[temp.SRR_ID]][["filtered_data"]] <- tmp.clean.data
   main.list.clean.data[[temp.SRR_ID]][["plots"]] <- list(p.point.coverage_breadth_byType = tmp.p.point.coverage_breadth_byType,
                                                          p.box.length_byType = tmp.p.box.length_byType,
                                                          p.point.phatypscore_length_byType = tmp.p.point.phatypscore_length_byType)
   main.clean.data <- rbind(main.clean.data, tmp.clean.data.long)
   main.clean.stat.data <- rbind(main.clean.stat.data, tmp.summary.stats)
-  
-  rm(list = c("tmp.clean.data", "tmp.temperate.wt",
-              "tmp.virulent.wt", "tmp.clean.data.long",
+  main.raw.stat.data.all <- rbind(main.raw.stat.data.all, tmp.summary.stats.raw)
+
+  rm(list = c("tmp.clean.data", "tmp.temperate.wt", "tmp.clean.data.all",
+              "tmp.virulent.wt", "tmp.clean.data.long", "tmp.summary.stats.raw",
               "temp.SRR_ID", "temp_instrain_dir",
               "tmp.summary.stats", "tmp.wilcox.test",
               "tmp.p.point.coverage_breadth_byType","tmp.p.box.length_byType",
