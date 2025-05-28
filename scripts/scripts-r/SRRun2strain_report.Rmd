@@ -1,15 +1,15 @@
 ---
-title: "SRRun2strain_output"
+title: "SRRun2strain_v3_output"
 author: "snakemake"
 date: "`r Sys.Date()`"
 params:
-  project_id: landuse
+  project_id: glacial
+  bioproject_id: PRJNA882246
   instrain_dir: instrain
-  lifestyle_file: phatyp_prediction.tsv
+  lifestyle_file: phastyle_prediction.tsv
   checkv_file: quality_summary.tsv
   working_dir: /Users/thomasdebruijn/Documents/PhD/R_PhD
   data_dir: /Users/thomasdebruijn/Documents/PhD/DATASETS
-  bioproject_id: PRJNA646773
   install: False
 output: 
   flexdashboard::flex_dashboard:
@@ -66,11 +66,11 @@ total.samples = computeSamplesTotal(main.clean.stat.data)
 valueBox(paste0(total.samples, " (", length(input.files.SRR.vector), ")"), icon = "fa-solid fa-dna")
 ```
 
-### vOTUs in dataset
+### Filtered vOTUs (of total) in dataset
 
 ```{r, echo=F}
 total.vOTUs = computevOTUsTotal(main.clean.data)
-valueBox(total.vOTUs, icon = "fa-solid fa-chart-line")
+valueBox(paste0(total.vOTUs, " (", length(clean.lifestyle.data$Accession), ")"), icon = "fa-solid fa-chart-line")
 ```
 
 ### Samples in dataset
@@ -105,7 +105,7 @@ This is the **general info** tab, containing an overview of the dataset.
 ### Statistics on per sample basis (filtered)
 
 ```{r table clean statistics data, echo=F}
-rmarkdown::paged_table(main.clean.stat.data, options = list(rows.print = 30,
+rmarkdown::paged_table(main.clean.stat.data, options = list(rows.print = 50,
                                                             cols.print = 15,
                                                             max.print = 300))
 ```
@@ -113,7 +113,7 @@ rmarkdown::paged_table(main.clean.stat.data, options = list(rows.print = 30,
 ### Statistics on raw data per sample basis
 
 ```{r table raw statistics data, echo=F}
-rmarkdown::paged_table(main.raw.stat.data.all, options = list(rows.print = 30,
+rmarkdown::paged_table(main.raw.stat.data.all, options = list(rows.print = 50,
                                                               cols.print = 15,
                                                               max.print = 300))
 ```
@@ -122,31 +122,37 @@ rmarkdown::paged_table(main.raw.stat.data.all, options = list(rows.print = 30,
 
 ## Row 1 {.tabset .tabset-fade data-height="2000"}
 
-### Total samples microdiversity plot
+### Total samples microdiversity
 
-```{r SRR ID microdiversity plot, echo=F, fig.dpi=400, fig.height=20, fig.width=8, fig.align='center'}
+```{r SRR ID microdiversity plot, echo=F, fig.dpi=400, fig.height=18, fig.width=10, fig.align='center'}
 p.interval.microdiversity_bysample
 ```
 
-### Mapping stats by SRR_ID plot
+### Total samples genome length
+
+```{r SRR ID length plot, echo=F, fig.dpi=400, fig.height=18, fig.width=10, fig.align='center'}
+p.interval.length_bysample
+```
+
+### Mapping stats by SRR_ID
 
 #### 
 
 ##### 
 
-```{r SRR ID breadth plot, echo=F, fig.height=6.5}
+```{r SRR ID interact breadth plot, echo=F, fig.height=6.5}
 ggplotly(p.bar.breadth_bysample)
 ```
 
 ##### 
 
-```{r SRR ID coverage plot, echo=F, fig.height=6.5}
+```{r SRR ID interact coverage plot, echo=F, fig.height=6.5}
 ggplotly(p.bar.coverage_bysample)
 ```
 
 ##### 
 
-```{r SRR ID length plot, echo=F, fig.height=6.5}
+```{r SRR ID interact length plot, echo=F, fig.height=6.5}
 ggplotly(p.bar.length_bysample)
 ```
 
