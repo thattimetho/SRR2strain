@@ -3,8 +3,8 @@ title: "SRRun2strain_v3_output"
 author: "snakemake"
 date: "`r Sys.Date()`"
 params:
-  project_id: glacial
-  bioproject_id: PRJNA882246
+  project_id: wildfire
+  bioproject_id: PRJNA1147726
   instrain_dir: instrain
   lifestyle_file: phastyle_prediction.tsv
   checkv_file: quality_summary.tsv

@@ -3,7 +3,8 @@
 ### setup
 rm(list = setdiff(ls(), c("master_script.data", "commandArgs_custom")))
 
-# dataset_id <- "bodega"
+# # Dummy arguments
+# dataset_id <- "glacial"
 # commandArgs_custom <- list(
 #   instrain_dir = paste("instrain", dataset_id, sep = "_"),
 #   lifestyle_file = paste(dataset_id, "phastyle_prediction.tsv", sep = "_"),
@@ -11,7 +12,28 @@ rm(list = setdiff(ls(), c("master_script.data", "commandArgs_custom")))
 #   wd = "/Users/thomasdebruijn/Documents/PhD/R_PhD",
 #   data_wd = "/Users/thomasdebruijn/Documents/PhD/DATASETS",
 #   install = F,
-#   bioproject_id = "PRJNA913601"
+#   bioproject_id = "PRJNA691683"
+# )
+# 
+# dataset_id <- "wildfire"
+# commandArgs_custom <- list(
+#   instrain_dir = paste("instrain", dataset_id, sep = "_"),
+#   lifestyle_file = paste(dataset_id, "phastyle_prediction.tsv", sep = "_"),
+#   checkv_file = paste(dataset_id, "quality_summary.tsv", sep = "_"),
+#   wd = "/Users/thomasdebruijn/Documents/PhD/R_PhD",
+#   data_wd = "/Users/thomasdebruijn/Documents/PhD/DATASETS",
+#   install = F,
+#   bioproject_id = ""
+# )
+# dataset_id <- "intertidal_all"
+# commandArgs_custom <- list(
+#   instrain_dir = paste("instrain", dataset_id, sep = "_"),
+#   lifestyle_file = "intertidal_phastyle_prediction.tsv",
+#   checkv_file = "intertidal_quality_summary.tsv",
+#   wd = "/Users/thomasdebruijn/Documents/PhD/R_PhD",
+#   data_wd = "/Users/thomasdebruijn/Documents/PhD/DATASETS",
+#   install = F,
+#   bioproject_id = ""
 # )
 
 # Load command arguments
@@ -286,7 +308,7 @@ main.clean.stat.data.new <- main.clean.stat.data %>%
                                               ifelse(wilcox_pvalue > 0.0001, "***",
                                                      ifelse(wilcox_pvalue < 0.0001, "****", NA)))))) %>%
   dplyr::ungroup() %>%
-  dplyr::mutate(markup_estimate = ifelse(!markup %in% c("",NA), wilcox_estimate, "")) %>%
+  dplyr::mutate(markup_estimate = ifelse(!markup %in% c("",NA), abs(wilcox_estimate), "")) %>%
   dplyr::distinct(SRR_ID, .keep_all = T) %>%
   dplyr::mutate(SRR_ID = as.character(SRR_ID))
 
@@ -324,8 +346,8 @@ p.interval.microdiversity_bysample <- main.clean.data.plot %>%
   geom_text(inherit.aes = F, data = main.clean.stat.data.new,
             aes(x = SRR_ID, y = 0.0001, label = markup), hjust = 0.5, nudge_x = 0) +
   geom_text(inherit.aes = F, data = main.clean.stat.data.new,
-            aes(x = SRR_ID, y = 0.00015, label = markup_estimate), hjust = 0) +
-  coord_flip(clip = "on", ylim = c(0.0001,0.05)) +
+            aes(x = SRR_ID, y = 0.00012, label = markup_estimate), hjust = 0) +
+  coord_flip(clip = "on", ylim = c(0.0001,0.02)) +
   scale_y_log10(guide = "axis_logticks") +
   theme_classic() +
   labs(title = "Microdiversity levels based on per sample instrain data",
@@ -341,12 +363,75 @@ p.interval.microdiversity_bysample <- main.clean.data.plot %>%
         plot.title.position = "plot")
 p.interval.microdiversity_bysample
 
-# ggsave(filename = paste(wd, paste0(input.file.instrain.dir, "_hist_plot.png"), sep = "/"),
-#        plot = p.interval.microdiversity_bysample + inset_element(legend.plot.data, l = 0.80, r = 0.999, t = 0.25, b = 0.10, clip = F, align_to = "full"),
-#        width = 2000, height = 2200,
-#        units = "px",
-#        scale = 1.7)
+#####
+# legend.plot.data <- main.clean.data.plot %>%
+#   dplyr::filter(value > 0 & SRR_ID == "SRR14194044") %>%
+#   ggplot( aes(x = reorder(SRR_ID, value), y = value, group = lifestyle)) +
+#   stat_interval(position = position_dodgejust(width = 0.6), linewidth = 2, width = 1, show.legend = NA,
+#                 colour = c(rep(head(MetBrewer::met.brewer("OKeeffe1", direction = -1), 3), 1),
+#                            rep(head(MetBrewer::met.brewer("OKeeffe1", direction = 1), 3), 1))) +
+#   stat_summary(geom = "point", fun = median, position = position_dodgejust(width = 0.6), colour = "white") +
+#   geom_text(inherit.aes = F, data = dplyr::filter(main.clean.stat.data.new, SRR_ID == "SRR14194044"),
+#             aes(x = SRR_ID, y = 0.000015, label = markup), hjust = 0.5) +
+#   geom_text(inherit.aes = F, data = dplyr::filter(main.clean.stat.data.new, SRR_ID == "SRR14194044"),
+#             aes(x = SRR_ID, y = 0.00002, label = markup_estimate), hjust = 0) +
+#   # Legend of intervals
+#   annotate(
+#     "richtext",
+#     x = c(1.8, 0.7, 1.95, 0.7),
+#     y = c(0.008, 0.0025, 0.0018, 0.0006),
+#     label = c("95% of vOTUs","80% of vOTUs","50% of vOTUs<br>fall within this range", "median"),
+#     fill = NA, label.size = 0, size = 3, vjust = 1,
+#   ) +
+#   geom_curve(
+#     inherit.aes = F,
+#     data = data.frame(
+#       xend = c(1.5, 1.5, 0.65, 0.65, 1.45, 1.45, 0.65),
+#       x = c(1.25, 0.95, 1.05, 0.8, 1.25, 0.95, 1.06),
+#       yend = c(0.007, 0.007, 0.003, 0.003, 0.002, 0.002, 0.0007),
+#       y = c(0.005, 0.006, 0.0035, 0.003, 0.0015, 0.002, 0.00105)),
+#     aes(x = x, xend = xend, y = y, yend = yend),
+#     stat = "unique", curvature = -0.2, size = 1, color = "grey12",
+#     arrow = arrow(angle = 20, length = unit(1, "mm"), ends = "first")
+#   ) +
+#   # Legend of lifestyle
+#   annotate(
+#     "richtext",
+#     x = c(1.4, 0.7),
+#     y = c(0.014, 0.012),
+#     label = c("Lytic","Lysogenic"),
+#     fill = NA, label.size = 0, size = 3, vjust = 1,
+#   ) +
+#   geom_curve(
+#     inherit.aes = F,
+#     data = data.frame(
+#       x = c(1.25, 0.6),
+#       xend = c(1.18, 0.85),
+#       y = c(0.012, 0.013),
+#       yend = c(0.0082, 0.0095)),
+#     aes(x = x, xend = xend, y = y, yend = yend),
+#     stat = "unique", curvature = 0.1, size = 1, color = "grey12",
+#     arrow = arrow(angle = 20, length = unit(1, "mm"))
+#   ) +
+#   coord_flip(clip = "on", ylim = c(0.0005,0.015)) +
+#   scale_y_log10(guide = "axis_logticks") +
+#   theme_void() +
+#   theme(plot.background = element_rect(colour = "grey30", linewidth = 0.3, fill = bg_color),
+#         panel.grid.major.y = element_line(linewidth = 0.5, linetype = 2, colour = "grey80"),
+#         axis.text.y = element_blank(),
+#         axis.ticks.x = element_blank(),
+#         plot.title = element_text(hjust = 0.01))
+# 
+# #legend.plot.data
+# p.interval.microdiversity_bysample + inset_element(legend.plot.data, l = 0.80, r = 1, t = 1, b = 0.925, clip = F, align_to = "full")
 
+ggsave(filename = paste(wd, paste0(input.file.instrain.dir, "_hist_plot.png"), sep = "/"),
+       plot = p.interval.microdiversity_bysample,
+       width = 2300, height = 3000,
+       units = "px",
+       scale = 1.5)
+
+#####
 p.box.length_bylifestyle <- main.clean.data %>%
   dplyr::filter(variable == "length") %>%
   ggplot( aes(x = lifestyle, y = value, colour = lifestyle)) +
@@ -390,14 +475,16 @@ p.box.breadth_bylifestyle <- main.clean.data %>%
 # Scratch
 tmp.wilcox.data.all <- main.clean.data %>%
   dplyr::filter(variable == "length") %>%
-  dplyr::mutate(SRR_ID = as.factor(as.character(SRR_ID))) %>%
+  #dplyr::mutate(SRR_ID = as.factor(as.character(SRR_ID))) %>%
   dplyr::select(-variable) %>%
-  base::split(~SRR_ID) %>%
-  purrr::map(~ wilcox.test(value ~ lifestyle, data = ., conf.int = T)) %>%
-  purrr::map_dfr( ~ broom::tidy(.))
+  dplyr::group_by(SRR_ID, lifestyle) %>%
+  base::split(~SRR_ID, drop = T) %>%
+  purrr::map(~ wilcox.test(value ~ lifestyle, data = ., 
+                           alternative = "t", conf.int = T)) %>%
+  purrr::map_dfr( ~ broom::tidy(.), .id = "SRR_ID")
 
 tmp.wilcox.data.all$p.value.adj <- p.adjust(tmp.wilcox.data.all$p.value, method = "BH")
-tmp.wilcox.data.all$SRR_ID <- unique(sort(main.clean.data$SRR_ID))
+#tmp.wilcox.data.all$SRR_ID <- unique(sort(main.clean.data$SRR_ID))
 tmp.wilcox.data.all <- tmp.wilcox.data.all %>%
   dplyr::mutate(markup = ifelse(p.value.adj > 0.05, "",
                                 ifelse(p.value.adj > 0.01, "*",
@@ -406,7 +493,7 @@ tmp.wilcox.data.all <- tmp.wilcox.data.all %>%
                                                      ifelse(p.value.adj < 0.0001, "****", NA)))))) %>%
   dplyr::ungroup() %>%
   dplyr::mutate(estimate = round(estimate, 0)) %>%
-  dplyr::mutate(markup_estimate = ifelse(!markup %in% c("",NA), estimate, "")) %>%
+  dplyr::mutate(markup_estimate = ifelse(!markup %in% c("",NA), abs(estimate), "")) %>%
   dplyr::distinct(SRR_ID, .keep_all = T) %>%
   dplyr::mutate(SRR_ID = as.character(SRR_ID))
 
@@ -437,5 +524,3 @@ p.interval.length_bysample <- main.clean.data %>%
         axis.text.y = element_text(hjust = 0),
         plot.title.position = "plot")
 # p.interval.length_bysample
-
-
