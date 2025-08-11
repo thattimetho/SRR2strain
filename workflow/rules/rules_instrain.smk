@@ -15,8 +15,6 @@ rule instrain_run:
         instrain_scaffold_out = "data/{run_ID}/instrain/instrain-{run_ID}-{SRR_ID}-{genome_ID}/output/instrain-{run_ID}-{SRR_ID}-{genome_ID}_scaffold_info.tsv"
     params:
         instrain_dir_out = "data/{run_ID}/instrain/instrain-{run_ID}-{SRR_ID}-{genome_ID}"
-    wildcard_constraints:
-        SRR_ID = r"SRR\d{6,10}"
     log:
         stdout="data/{run_ID}/logs/instrain-{SRR_ID}-{genome_ID}.log",
         stderr="data/{run_ID}/logs/instrain-{SRR_ID}-{genome_ID}.err.log"

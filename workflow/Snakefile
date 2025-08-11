@@ -70,7 +70,7 @@ rule all:
                SRR_ID = expand_sra_from_file(), genome_ID = config["metadata_settings"]["genome_ID"],
                run_ID = config["metadata_settings"]["dataset_ID"])
     wildcard_constraints:
-        SRR_ID = r"SRR\d{6,10}"
+        SRR_ID = r"[S,E]RR\d{6,10}"
 
 rule help:
 ## help                                         : Prints all primary comments to stdout

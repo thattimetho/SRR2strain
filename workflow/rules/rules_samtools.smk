@@ -7,8 +7,6 @@ rule samtools_convert_to_bam:
         mapped_reads_sam_unsorted_in = "data/{run_ID}/mappings/{SRR_ID}-{genome_ID}.unsorted.sam"
     output:
         mapped_reads_bam_unsorted_out = temp("data/{run_ID}/mappings/{SRR_ID}-{genome_ID}.unsorted.bam")
-    wildcard_constraints:
-        SRR_ID = r"SRR\d{6,10}"
     log:
         stdout = "data/{run_ID}/logs/samtools-convert2b-{SRR_ID}-{genome_ID}.log",
         stderr = "data/{run_ID}/logs/samtools-convert2b-{SRR_ID}-{genome_ID}.err.log"
@@ -24,8 +22,6 @@ rule samtools_sort:
         mapped_reads_bam_unsorted_in = "data/{run_ID}/mappings/{SRR_ID}-{genome_ID}.unsorted.bam"
     output:
         mapped_reads_bam_sorted_out = "data/{run_ID}/mappings/{SRR_ID}-{genome_ID}.sorted.bam"
-    wildcard_constraints:
-        SRR_ID = r"SRR\d{6,10}"
     log:
         stdout = "data/{run_ID}/logs/samtools-sort-{SRR_ID}-{genome_ID}.log",
         stderr = "data/{run_ID}/logs/samtools-sort-{SRR_ID}-{genome_ID}.err.log"
