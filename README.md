@@ -7,7 +7,7 @@ Software pipeline written in Snakemake, used for analysing microdiversity in met
 This package can be installed by cloning this repo. The yaml files for the conda environment are located in the workflow/envs directory. It is important to have snakemake and conda installed already.
 
 ## Usage
-Workflow uses Snakemake to run various tools. General usage is "snakemake --use-conda --cores 2 --config-file ["config-file"]" in main directory.
+Workflow uses Snakemake to run various tools. General usage is "snakemake --use-conda --cores 2 --configfile ["config-file"]" in main directory.
 
 ## Support
 This package is solely build and maintained by Thomas de Bruijn. 
