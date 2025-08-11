@@ -60,7 +60,7 @@ rule checkv_completeness_check:
         checkv_db_dir = config["database_dir_settings"]["checkv_db_dir"],
         checkv_out_dir = config["data_dir_settings"]["checkv_dir"]
     output:
-        genome_check_out = expand("data/{genome_fasta_dir}/checkv_{dataset_id_out}/quality_summary.tsv",
+        genome_check_out = expand("data/{genome_checkv_dir}/checkv_{dataset_id_out}/quality_summary.tsv",
                                   genome_checkv_dir = config["data_dir_settings"]["checkv_dir"],
                                   dataset_id_out = config["metadata_settings"]["dataset_ID"])
     threads:
