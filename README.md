@@ -1,4 +1,4 @@
-# SRRrun2strain pipeline
+# SRR2strain pipeline
 
 ## Description
 Software pipeline written in Snakemake, used for analysing microdiversity in metagenomics and viromics datasets.
