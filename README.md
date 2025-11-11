@@ -18,7 +18,7 @@ It is not strictly needed to run the bash script, although the output directorie
 General usage of the snakemake pipeline uses the following parameters: \
 `snakemake --use-conda --cores 2 --configfile ["config-file"]`
 
-The snakemake command has to be run from the top-level directory of the repository. `--cores 2` can be adapted to however many cores the host device has available for computation.
+Make sure that snakemake is installed on the host system before attempting to run the pipeline. The snakemake command has to be run from the top-level directory of the repository. `--cores 2` can be adapted to however many cores the host device has available for computation.
 Jobs in the pipeline will scale to this setting automatically. For the `--configfile` flag, the .yml config file can be found in the "metadata" directory after running the bash script.
 
 To get more information on running the pipeline and the tools/rules therein, clone the repository and run the `snakemake help --use-conda --cores 1` command. This will display information on the usage and rules in the pipeline.
