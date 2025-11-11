@@ -5,6 +5,7 @@
 ## |____/|_| \_\_| \_\_____|___/\__|_|  \__,_|_|_| |_|
 ## Description  : Workflow for automatic mapping and analysis of reads and microdiversity
 ## Author       : Thomas de Bruijn
+## Usage        : snakemake --use-conda --cores 2 --configfile=["configfile"]
 ##
 
 # Import system packages
