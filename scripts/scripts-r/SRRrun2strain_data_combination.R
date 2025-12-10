@@ -3,8 +3,8 @@
 ### setup
 rm(list = setdiff(ls(), c("master_script.data", "commandArgs_custom")))
 
-# # Dummy arguments
-# dataset_id <- "glacial"
+# Dummy arguments
+# dataset_id <- "antarctic"
 # commandArgs_custom <- list(
 #   instrain_dir = paste("instrain", dataset_id, sep = "_"),
 #   lifestyle_file = paste(dataset_id, "phastyle_prediction.tsv", sep = "_"),
@@ -12,7 +12,7 @@ rm(list = setdiff(ls(), c("master_script.data", "commandArgs_custom")))
 #   wd = "/Users/thomasdebruijn/Documents/PhD/R_PhD",
 #   data_wd = "/Users/thomasdebruijn/Documents/PhD/DATASETS",
 #   install = F,
-#   bioproject_id = "PRJNA691683"
+#   bioproject_id = "PRJEB71789"
 # )
 # 
 # dataset_id <- "wildfire"
@@ -30,6 +30,46 @@ rm(list = setdiff(ls(), c("master_script.data", "commandArgs_custom")))
 #   instrain_dir = paste("instrain", dataset_id, sep = "_"),
 #   lifestyle_file = "intertidal_phastyle_prediction.tsv",
 #   checkv_file = "intertidal_quality_summary.tsv",
+#   wd = "/Users/thomasdebruijn/Documents/PhD/R_PhD",
+#   data_wd = "/Users/thomasdebruijn/Documents/PhD/DATASETS",
+#   install = F,
+#   bioproject_id = ""
+# )
+# dataset_id <- "bodega_all"
+# commandArgs_custom <- list(
+#   instrain_dir = paste("instrain", dataset_id, sep = "_"),
+#   lifestyle_file = "bodega_phastyle_prediction.tsv",
+#   checkv_file = "bodega_quality_summary.tsv",
+#   wd = "/Users/thomasdebruijn/Documents/PhD/R_PhD",
+#   data_wd = "/Users/thomasdebruijn/Documents/PhD/DATASETS",
+#   install = F,
+#   bioproject_id = ""
+# )
+# dataset_id <- "santosviromes_all"
+# commandArgs_custom <- list(
+#   instrain_dir = paste("instrain", dataset_id, sep = "_"),
+#   lifestyle_file = "santosviromes_phastyle_prediction.tsv",
+#   checkv_file = "santosviromes_quality_summary.tsv",
+#   wd = "/Users/thomasdebruijn/Documents/PhD/R_PhD",
+#   data_wd = "/Users/thomasdebruijn/Documents/PhD/DATASETS",
+#   install = F,
+#   bioproject_id = ""
+# )
+# dataset_id <- "glacial_all"
+# commandArgs_custom <- list(
+#   instrain_dir = paste("instrain", dataset_id, sep = "_"),
+#   lifestyle_file = "glacial_phastyle_prediction.tsv",
+#   checkv_file = "glacial_quality_summary.tsv",
+#   wd = "/Users/thomasdebruijn/Documents/PhD/R_PhD",
+#   data_wd = "/Users/thomasdebruijn/Documents/PhD/DATASETS",
+#   install = F,
+#   bioproject_id = ""
+# )
+# dataset_id <- "watershed_all"
+# commandArgs_custom <- list(
+#   instrain_dir = paste("instrain", dataset_id, sep = "_"),
+#   lifestyle_file = "watershed_phatyp_prediction.tsv",
+#   checkv_file = "watershed_quality_summary.tsv",
 #   wd = "/Users/thomasdebruijn/Documents/PhD/R_PhD",
 #   data_wd = "/Users/thomasdebruijn/Documents/PhD/DATASETS",
 #   install = F,
@@ -83,7 +123,7 @@ suppressPackageStartupMessages({
 
 # Custom SRR ID function
 SRR_extract <- function(in.string){
-  SRR.pattern <- "^SRR\\d{6,10}$"
+  SRR.pattern <- "^[S,E]RR\\d{6,10}$"
   in.string = str_split_1(in.string, "_|-")
   out.string = in.string[str_detect(in.string, SRR.pattern)]
   out.string = as.character(out.string)
@@ -524,3 +564,45 @@ p.interval.length_bysample <- main.clean.data %>%
         axis.text.y = element_text(hjust = 0),
         plot.title.position = "plot")
 # p.interval.length_bysample
+
+#####
+# Poster material
+# SRR_TO_PLOT <- c("SRR21686415","SRR21686413","SRR21686409","SRR21686423")
+# SRR_TO_PLOT.data <- dplyr::filter(main.clean.data.plot, value > 0, SRR_ID %in% SRR_TO_PLOT)
+# 
+# p.interval.microdiversity_bysample_subset <- SRR_TO_PLOT.data %>%
+#   ggplot( aes(x = SRR_ID, y = value, group = lifestyle)) +
+#   stat_halfeye(data = dplyr::filter(SRR_TO_PLOT.data, lifestyle == "virulent"), fill = "#6b200c", 
+#                position = position_nudge(x = .05), alpha = 0.4, scale = 0.45) +
+#   stat_halfeye(data = dplyr::filter(SRR_TO_PLOT.data, lifestyle == "temperate"), side = "bottom",
+#                fill = "#133e7e", position = position_nudge(x = -0.05), alpha = 0.4, scale = 0.45) +
+#   stat_interval(position = position_dodgejust(width = 0.3), linewidth = 3, width = 1, show.legend = NA,
+#                 colour = c(rep(head(MetBrewer::met.brewer("OKeeffe1", direction = -1), 3), length(SRR_TO_PLOT)), 
+#                            rep(head(MetBrewer::met.brewer("OKeeffe1", direction = 1), 3), length(SRR_TO_PLOT)))) +
+#   stat_summary(geom = "point", fun = median, position = position_dodgejust(width = 0.3), colour = "white") +
+#   geom_text(inherit.aes = F, data = dplyr::filter(main.clean.stat.data.new, SRR_ID %in% SRR_TO_PLOT),
+#             aes(x = SRR_ID, y = 0.0001, label = markup), hjust = 0.5, nudge_x = 0) +
+#   geom_text(inherit.aes = F, data = dplyr::filter(main.clean.stat.data.new, SRR_ID %in% SRR_TO_PLOT),
+#             aes(x = SRR_ID, y = 0.00012, label = markup_estimate), hjust = 0) +
+#   coord_flip(clip = "on", ylim = c(0.0001,0.02)) +
+#   scale_y_log10(guide = "axis_logticks") +
+#   theme_classic() +
+#   labs(title = "Microdiversity levels based on per sample instrain data",
+#        subtitle = "P values adjusted using BH method. Top bar = virulent, bottom bar = temperate\n *: p<0.05, **: p<0.01, ***: p<0.001, ****: p<0.0001",
+#        y = "Microdiversity (\u03c0)",
+#        x = "SRR IDs",
+#        caption = paste(paste0("Data = ", input.file.instrain.dir),
+#                        paste0("Bioproject = ", bioproject_ID), 
+#                        sep = "\n")) +
+#   theme(plot.background = element_rect(color = NA, fill = bg_color),
+#         panel.grid.major.y = element_line(linewidth = 1, linetype = 2),
+#         axis.text.y = element_text(hjust = 0),
+#         plot.title.position = "plot")
+# p.interval.microdiversity_bysample_subset
+
+
+
+
+
+
+
