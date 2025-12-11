@@ -23,6 +23,9 @@ Jobs in the pipeline will scale to this setting automatically. For the `--config
 
 To get more information on running the pipeline and the tools/rules therein, clone the repository and run the `snakemake help --use-conda --cores 1` command. This will display information on the usage and rules in the pipeline.
 
+## Pipeline overview
+<img height="800" src="./resources/PhD_WP1_workflow_v5.png" title="Overview of SRR2strain pipeline" width="800"/>
+
 ## Support
 This package is solely build and maintained by Thomas de Bruijn. 
 If you find any bugs or features lacking in the software, please consider contributing to this project. For more information, you can [mail the author](mailto:thomas.de.bruijn26@gmail.com).
