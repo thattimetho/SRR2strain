@@ -12,7 +12,7 @@ commandArgs_custom <- list(
     wd = "/Users/thomasdebruijn/Documents/PhD/R_PhD",
     data_wd = "/Users/thomasdebruijn/Documents/PhD/DATASETS",
     install = F,
-    bioproject_id = "PRJNA882246"
+    bioproject_id = ""
 )
 
 # Load command arguments
@@ -549,61 +549,61 @@ ggsave(plot = p.interval.microdiversity_bysample,
        units = "px", dpi = 400, scale = 1.5)
 
 #####
-ComplexUpset::upset(tmp.clean.data, intersect = c("phatyp_lytic","phatyp_temperate",
-                                                  "phastyle_lytic","phastyle_temperate"),
-                    name = element_blank(),
-                    base_annotations=list(
-                        'Intersection size'=intersection_size(
-                            counts=FALSE,
-                            mapping=aes(fill=blasthit))
-                        +theme(axis.title.y = element_text(angle = 70, vjust = 0.5),
-                               legend.position = "top", plot.title.position = "plot")
-                        +scale_fill_discrete(name = "BLAST hit w/ integrase")
-                        +scale_y_continuous(position = "left")
-                        +labs(title = "Comparison between lifestyle prediction tools \n(PhaTYP and PhaStyle)")
-                    ),
-                    annotations = list(
-                        # "Coverage dist."=list(
-                        #     aes=aes(x=intersection, y = coverage),
-                        #     geom=list(
-                        #         geom_boxplot(),
-                        #         coord_cartesian(ylim = c(0, 150)),
-                        #         theme(axis.title.y = element_text(angle = 70, vjust = 0.5))
-                        #     )
-                        # ),
-                        # "Completeness dist."=list(
-                        #     aes=aes(x=intersection, y = completeness),
-                        #     geom=list(
-                        #         geom_violin(),
-                        #         coord_cartesian(ylim = c(80,100)),
-                        #         theme(axis.title.y = element_text(angle = 70, vjust = 0.5))
-                        #     )
-                        # )
-                        # ,"Breadth dist."=list(
-                        #     aes=aes(x=intersection, y = breadth),
-                        #     geom=list(
-                        #         geom_violin(),
-                        #         coord_cartesian(ylim = c(0.8, 1)),
-                        #         theme(axis.title.y = element_text(angle = 70, vjust = 0.5))
-                        #     )
-                        # )
-                    ),
-                    set_sizes=(
-                        upset_set_size(
-                            geom=geom_bar(aes(fill = blasthit), width=0.4))
-                        + geom_label(aes(label=after_stat(count)), size = 2.5, nudge_y = -1000,
-                                     hjust = 0.5, stat='count', label.size = unit(0, "lines"))
-                        + theme(axis.text.x=element_text(angle=45, vjust = 0.5),
-                                axis.ticks.x=element_line(),
-                                axis.title.x = element_blank(),
-                                legend.position = "none")
-                        + ylim(20000, 0)
-                    ),
-                    sort_sets=F) & theme(plot.background = element_rect(fill = "grey97", colour = NA))
-
-ggsave(filename = paste(wd, paste0(input.file.instrain.dir, "_lifestyle_upset_plot.png"), sep = "/"),
-       width = 3000, height = 1500,
-       units = "px", dpi = 400)
+# ComplexUpset::upset(tmp.clean.data, intersect = c("phatyp_lytic","phatyp_temperate",
+#                                                   "phastyle_lytic","phastyle_temperate"),
+#                     name = element_blank(),
+#                     base_annotations=list(
+#                         'Intersection size'=intersection_size(
+#                             counts=FALSE,
+#                             mapping=aes(fill=blasthit))
+#                         +theme(axis.title.y = element_text(angle = 70, vjust = 0.5),
+#                                legend.position = "top", plot.title.position = "plot")
+#                         +scale_fill_discrete(name = "BLAST hit w/ integrase")
+#                         +scale_y_continuous(position = "left")
+#                         +labs(title = "Comparison between lifestyle prediction tools \n(PhaTYP and PhaStyle)")
+#                     ),
+#                     annotations = list(
+#                         # "Coverage dist."=list(
+#                         #     aes=aes(x=intersection, y = coverage),
+#                         #     geom=list(
+#                         #         geom_boxplot(),
+#                         #         coord_cartesian(ylim = c(0, 150)),
+#                         #         theme(axis.title.y = element_text(angle = 70, vjust = 0.5))
+#                         #     )
+#                         # ),
+#                         # "Completeness dist."=list(
+#                         #     aes=aes(x=intersection, y = completeness),
+#                         #     geom=list(
+#                         #         geom_violin(),
+#                         #         coord_cartesian(ylim = c(80,100)),
+#                         #         theme(axis.title.y = element_text(angle = 70, vjust = 0.5))
+#                         #     )
+#                         # )
+#                         # ,"Breadth dist."=list(
+#                         #     aes=aes(x=intersection, y = breadth),
+#                         #     geom=list(
+#                         #         geom_violin(),
+#                         #         coord_cartesian(ylim = c(0.8, 1)),
+#                         #         theme(axis.title.y = element_text(angle = 70, vjust = 0.5))
+#                         #     )
+#                         # )
+#                     ),
+#                     set_sizes=(
+#                         upset_set_size(
+#                             geom=geom_bar(aes(fill = blasthit), width=0.4))
+#                         + geom_label(aes(label=after_stat(count)), size = 2.5, nudge_y = -1000,
+#                                      hjust = 0.5, stat='count', label.size = unit(0, "lines"))
+#                         + theme(axis.text.x=element_text(angle=45, vjust = 0.5),
+#                                 axis.ticks.x=element_line(),
+#                                 axis.title.x = element_blank(),
+#                                 legend.position = "none")
+#                         + ylim(20000, 0)
+#                     ),
+#                     sort_sets=F) & theme(plot.background = element_rect(fill = "grey97", colour = NA))
+# 
+# ggsave(filename = paste(wd, paste0(input.file.instrain.dir, "_lifestyle_upset_plot.png"), sep = "/"),
+#        width = 3000, height = 1500,
+#        units = "px", dpi = 400)
 
 #####
 # Check for unique vOTUs in each SRR_ID
@@ -811,4 +811,7 @@ p.heatmap.microdiversity_bysample.bootstrapped <- bootstrap.clean.data %>%
           plot.title.position = "plot")
 p.heatmap.microdiversity_bysample.bootstrapped
 
-
+ggsave(plot = p.heatmap.microdiversity_bysample.bootstrapped,
+       filename = paste(sys.args$data_wd, paste(dataset_id,"microdiversity_bootstrap_plot.png", sep = "_"), sep = "/"),
+       width = 2100, height = 1500,
+       units = "px", dpi = 400, scale = 1.5)

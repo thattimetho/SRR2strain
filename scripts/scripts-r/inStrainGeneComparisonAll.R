@@ -68,6 +68,7 @@ for (dataset_i in 1:length(dataset.vec)){
         lifestyle_phastyle_file = paste(str_split_i(dataset_id, "_", 1), "phastyle_prediction.tsv", sep = "_"),
         checkv_file = paste(str_split_i(dataset_id, "_", 1), "quality_summary.tsv", sep = "_"),
         coverm_file = paste("coverm_relabun", dataset_id, "vOTUs.tsv", sep = "_"),
+        genomad_file = paste(str_split_i(dataset_id, "_", 1), "vOTUs_virus_summary.tsv", sep = "_"),
         wd = "/Users/thomasdebruijn/Documents/PhD/R_PhD",
         data_wd = "/Users/thomasdebruijn/Documents/PhD/DATASETS",
         install = F,
@@ -84,6 +85,7 @@ for (dataset_i in 1:length(dataset.vec)){
     input.file.phastyle.lifestyle.name <- sys.args$lifestyle_phastyle_file
     input.file.coverm.name <- sys.args$coverm_file
     input.file.checkv.name <- sys.args$checkv_file
+    input.file.genomad.name <- sys.args$genomad_file
     bioproject_ID <- sys.args$bioproject_id
     
     #####
@@ -106,6 +108,15 @@ for (dataset_i in 1:length(dataset.vec)){
     #                  gene_dNdS_substitutions = median(dNdS_substitutions, na.rm = T))
     
     rm("raw.instrain.gene.data")
+    # Load geNomad predictions and clean
+    raw.genomad.data <- read.csv(file = paste(data_wd, input.file.genomad.name, sep = "/"), 
+                                 sep = "\t", header = T)
+    
+    clean.genomad.data <- raw.genomad.data |>
+        dplyr::mutate(contig_id = str_split_i(seq_name, "_length_", i = 1), .keep = "unused") |>
+        dplyr::select(contig_id, taxonomy)
+    
+    rm("raw.genomad.data")
     # PROTOTYPING - Load raw instrain data and clean
     tmp.raw.instrain.data <- read.csv(file = paste0(test.input.files.instrain.vec[1], "_scaffold_info.tsv"), 
                                       sep = "\t", header = T)
@@ -227,6 +238,10 @@ for (dataset_i in 1:length(dataset.vec)){
                          relationship = "many-to-one") |>
         dplyr::left_join(tmp.clean.instrain.data, by = join_by(Accession), keep = F,
                          relationship = "many-to-one", suffix = c("","_extra")) |>
+        dplyr::left_join(clean.genomad.data, by = join_by(Accession == contig_id),
+                         keep = F, relationship = "many-to-one", multiple = "any") |>
+        dplyr::mutate(tailed_phage = if_else(grepl("Caudoviricetes", taxonomy), TRUE, FALSE)) |>
+        dplyr::filter(tailed_phage == TRUE) |>
         dplyr::mutate(blasthit = ifelse(!is.na(evalue), T, F)) |>
         dplyr::mutate(phatyp_lytic = ifelse(PhaTYPType == "virulent", TRUE, FALSE),
                       phatyp_temperate = ifelse(PhaTYPType == "temperate", TRUE, FALSE),
@@ -396,12 +411,32 @@ p.bar.dnds.all <- SRR_TO_PLOT.data.wide |>
           plot.background = element_rect(fill = "white"),
           axis.title.x = element_blank())
 
-ggsave(plot = p.bar.dnds.all,
-       filename = paste(sys.args$data_wd, "genes_dnds_all.png", sep = "/"),
-       width = 700, height = 500,
-       units = "px", dpi = 400, scale = 2.5)
+# ggsave(plot = p.bar.dnds.all,
+#        filename = paste(sys.args$data_wd, "genes_dnds_all.png", sep = "/"),
+#        width = 700, height = 500,
+#        units = "px", dpi = 400, scale = 2.5)
 
 ##### First collection plot, dNds stuff ####
+pnps.stat.data.clean <- SRR_TO_PLOT.data.wide |>
+    base::split(~SRR_ID, drop = T) |>
+    purrr::map(~ wilcox.test(pNpS_variants ~ lifestyle, data = ., conf.int = T)) |>
+    purrr::map_dfr( ~ broom::tidy(.), .id = "SRR_ID") |>
+    dplyr::mutate(study_ID = if_else(SRR_ID == "SRR000006", "Glacial",
+                                     if_else(SRR_ID == "SRR000004", "AgriSoil",
+                                             if_else(SRR_ID == "SRR000002","BodegaBay",
+                                                     if_else(SRR_ID == "SRR000001", "Land-use",
+                                                             if_else(SRR_ID == "SRR000003", "Intertidal", 
+                                                                     if_else(SRR_ID == "SRR000007", "Wildfire", NA)))))),
+                  .after = SRR_ID) |>
+    dplyr::rename(wilcox_pvalue = p.value, wilcox_estimate = estimate) |>
+    dplyr::mutate(markup = ifelse(wilcox_pvalue > 0.05, "",
+                                  ifelse(wilcox_pvalue > 0.01, "*",
+                                         ifelse(wilcox_pvalue > 0.001, "**",
+                                                ifelse(wilcox_pvalue > 0.0001, "***",
+                                                       ifelse(wilcox_pvalue < 0.0001, "****", NA)))))) |>
+    dplyr::ungroup() |>
+    dplyr::mutate(markup_estimate = ifelse(!markup %in% c("",NA), wilcox_estimate, ""))
+
 p.bar.pnps.all <- SRR_TO_PLOT.data.wide |>
     dplyr::mutate(study_ID = if_else(SRR_ID == "SRR000006", "Glacial",
                                      if_else(SRR_ID == "SRR000004", "AgriSoil",
@@ -430,6 +465,8 @@ p.bar.pnps.all <- SRR_TO_PLOT.data.wide |>
                                 .after = SRR_ID),
               aes(x = study_ID, y = 40, label = sum, group = lifestyle, hjust = 0.5, angle = 30), 
               inherit.aes = F, position = position_dodge(width = 0.9), color = "black") +
+    geom_text(inherit.aes = F, data = pnps.stat.data.clean,
+              aes(x = study_ID, y = 11, label = markup), hjust = 0.5, nudge_x = 0) +
     scale_fill_manual(values = c("temperate" = "#2480e6", "virulent" = "#ec612e", 
                                  "below_thresh" = "lightgrey", "unknown" = "grey"),
                       breaks = c("temperate", "virulent", "below_thresh", "unknown"),
@@ -442,7 +479,7 @@ p.bar.pnps.all <- SRR_TO_PLOT.data.wide |>
                        name = "vOTU lifestyle") +
     scale_y_log10() +
     geom_hline(yintercept = 1, colour = "red") +
-    labs(title = "(x). Distribution of pN/pS mutations (median value)",
+    labs(title = "Distribution of pN/pS mutations (median value)",
          y = "pN/pS ratio",
          x = "Dataset ID") +
     theme_classic() +
@@ -457,10 +494,10 @@ tmp.genes.legend <- get_legend(p.bar.pnps.all)
 p.bar.pnps.all <- p.bar.pnps.all +
     theme(legend.position = "none")
 
-ggsave(plot = p.bar.pnps.all,
-       filename = paste(sys.args$data_wd, "genes_pnps_all_median.png", sep = "/"),
-       width = 700, height = 500,
-       units = "px", dpi = 400, scale = 2.5)
+# ggsave(plot = p.bar.pnps.all,
+#        filename = paste(sys.args$data_wd, "genes_pnps_all_median.png", sep = "/"),
+#        width = 700, height = 500,
+#        units = "px", dpi = 400, scale = 2.5)
 
 p.bar.pnps.all.mean <- SRR_TO_PLOT.data.wide |>
     dplyr::mutate(study_ID = if_else(SRR_ID == "SRR000006", "Glacial",
@@ -514,10 +551,10 @@ p.bar.pnps.all.mean <- SRR_TO_PLOT.data.wide |>
           plot.background = element_rect(fill = "white"),
           axis.title.x = element_blank())
 
-ggsave(plot = p.bar.pnps.all.mean,
-       filename = paste(sys.args$data_wd, "genes_pnps_all_mean.png", sep = "/"),
-       width = 700, height = 500,
-       units = "px", dpi = 400, scale = 2.5)
+# ggsave(plot = p.bar.pnps.all.mean,
+#        filename = paste(sys.args$data_wd, "genes_pnps_all_mean.png", sep = "/"),
+#        width = 700, height = 500,
+#        units = "px", dpi = 400, scale = 2.5)
 
 p.bar.dnds.all <- SRR_TO_PLOT.data.wide |>
     dplyr::mutate(study_ID = if_else(SRR_ID == "SRR000006", "Glacial",
@@ -655,10 +692,10 @@ p_collected_genes <- gridExtra::grid.arrange(p.bar.pnps.all,
                                              layout_matrix = cbind(c(1,2),c(3,4),c(5,5)),
                                              widths = c(2.5,2.5,.7))
 
-ggsave(plot = p_collected_genes,
-       filename = paste(sys.args$data_wd, "dNdS_combination_plot_genes_all.png", sep = "/"),
-       width = 2000, height = 1500,
-       units = "px", dpi = 400, scale = 1.5)
+# ggsave(plot = p_collected_genes,
+#        filename = paste(sys.args$data_wd, "dNdS_combination_plot_genes_all.png", sep = "/"),
+#        width = 2000, height = 1500,
+#        units = "px", dpi = 400, scale = 1.5)
 
 #####
 
@@ -736,12 +773,12 @@ cor.data.all <- cor(dplyr::distinct(SRR_TO_PLOT.data.wide, genome_ID, .keep_all 
 corrplot(cor.data.temperate, method = "number")
 corrplot(cor.data.virulent, method = "number")
 corrplot(cor.data.all, method = "number", type = "upper", tl.srt = 45)
-p.corr.all.v.all <- recordPlot()
+#p.corr.all.v.all <- recordPlot()
 
-ggsave(plot = replayPlot(p.corr.all.v.all),
-       filename = paste(sys.args$data_wd, "cor_all_v_all.png", sep = "/"),
-       width = 500, height = 500,
-       units = "px")
+# ggsave(plot = replayPlot(p.corr.all.v.all),
+#        filename = paste(sys.args$data_wd, "cor_all_v_all.png", sep = "/"),
+#        width = 500, height = 500,
+#        units = "px")
 
 ##### Second collection plot, general statistics ####
 p.bar.lifestyle_total.all.per_study.per_lifestyle <- SRR_TO_PLOT.data.wide |>
@@ -929,10 +966,10 @@ p_collected_population <- gridExtra::grid.arrange(p.bar.lifestyle_total.all.per_
                                                   layout_matrix = cbind(c(1,2),c(3,4),c(5,5)),
                                                   widths = c(2.5,2.5,.7))
 
-ggsave(plot = p_collected_population,
-       filename = paste(sys.args$data_wd, "lifestyle_plot_genes_all.png", sep = "/"),
-       width = 2000, height = 1500,
-       units = "px", dpi = 400, scale = 1.5)
+# ggsave(plot = p_collected_population,
+#        filename = paste(sys.args$data_wd, "lifestyle_plot_genes_all.png", sep = "/"),
+#        width = 2000, height = 1500,
+#        units = "px", dpi = 400, scale = 1.5)
 
 ##### Making line graphs of relationships between genome metrics and gene metrics ####
 p.point.microdiversity.gene_vs_genome.all <- SRR_TO_PLOT.data.wide |>
@@ -1015,7 +1052,4 @@ SRR_TO_PLOT.data.wide |>
           panel.grid.major.y = element_line(colour = "grey90"),
           plot.title.position = "plot",
           plot.background = element_rect(fill = "white"))
-
-
-
 
