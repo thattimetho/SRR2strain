@@ -28,7 +28,7 @@ To get more information on running the pipeline and the tools/rules therein, clo
 
 ## Support
 This package is solely build and maintained by Thomas de Bruijn. 
-If you find any bugs or features lacking in the software, please consider contributing to this project. For more information, you can [mail the author](mailto:thomas.de.bruijn26@gmail.com).
+If you find any bugs or features lacking in the software, please consider contributing to this project. For more information, you can [mail the author](mailto:thomas.debruijn@wur.nl).
 
 ## Roadmap
 No features are planned yet.
