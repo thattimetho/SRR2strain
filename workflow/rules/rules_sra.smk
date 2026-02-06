@@ -4,7 +4,7 @@ from snakemake.io import temp, expand
 rule sra_prefetch:
 ## sra_prefetch                                 : Prefetches SRA datasets from NCBI SRA repo
     output:
-        sra_dataset_out = "data/{run_ID}/sra_temp/{SRR_ID}/{SRR_ID}.sra"
+        sra_dataset_out = temp("data/{run_ID}/sra_temp/{SRR_ID}/{SRR_ID}.sra")
     params:
         sra_ID_prefetch = lambda wildcards: wildcards.SRR_ID,
         sra_dataset_out_dir = "data/{run_ID}/sra_temp/"
