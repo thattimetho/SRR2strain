@@ -47,6 +47,8 @@ rule bowtie2_map:
         stderr = "data/{run_ID}/logs/bowtie2_{SRR_ID}_{genome_ID}.err.log"
     threads:
         min(workflow.cores/2, 4)
+    priority:
+        1
     conda:
         "manual-tools"
     shell:

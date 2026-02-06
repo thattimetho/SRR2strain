@@ -10,6 +10,8 @@ rule samtools_convert_to_bam:
     log:
         stdout = "data/{run_ID}/logs/samtools-convert2b-{SRR_ID}-{genome_ID}.log",
         stderr = "data/{run_ID}/logs/samtools-convert2b-{SRR_ID}-{genome_ID}.err.log"
+    priority:
+        2
     conda:
         "manual-samtools"
     shell:
@@ -25,6 +27,8 @@ rule samtools_sort:
     log:
         stdout = "data/{run_ID}/logs/samtools-sort-{SRR_ID}-{genome_ID}.log",
         stderr = "data/{run_ID}/logs/samtools-sort-{SRR_ID}-{genome_ID}.err.log"
+    priority:
+        3
     conda:
         "manual-samtools"
     shell:
