@@ -15,7 +15,7 @@ rule sra_prefetch:
         1
     shell:
         """
-        prefetch {params.sra_ID_prefetch} -O {params.sra_dataset_out_dir} -f yes > {log.stdout} 2> {log.stderr}
+        prefetch --max-size 100g {params.sra_ID_prefetch} -O {params.sra_dataset_out_dir} -f yes > {log.stdout} 2> {log.stderr}
         """
 
 
