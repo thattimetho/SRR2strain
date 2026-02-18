@@ -8,9 +8,7 @@ rule bowtie2_index_db:
                               genome_fasta_dir = config["data_dir_settings"]["genome_dir"],
                               genome_ID = config["metadata_settings"]["genome_ID"])
     output:
-        genome_index_out = expand("data/{genome_index_dir}/{genome_ID}-index.1.bt2",
-                                  genome_index_dir = config["data_dir_settings"]["index_dir"],
-                                  genome_ID = config["metadata_settings"]["genome_ID"])
+        genome_index_done = touch("data/{run_ID}/bowtie2_{genome_ID}_index.done")
     params:
         index_name = config["metadata_settings"]["genome_ID"],
         index_dir = config["data_dir_settings"]["index_dir"]
@@ -26,14 +24,15 @@ rule bowtie2_index_db:
     conda:
         "manual-tools"
     shell:
-        "bowtie2-build --threads {threads} {input.genome_db_in} data/{params.index_dir}/{params.index_name}-index > {log.stdout} 2> {log.stderr}"
+        """
+        bowtie2-build --threads {threads} {input.genome_db_in} \
+        data/{params.index_dir}/{params.index_name}-index > {log.stdout} 2> {log.stderr}"
+        """
 
 rule bowtie2_map:
 ## bowtie2_map                                  : Map reads unto reference genome database
     input:
-        genome_index_in = expand("data/{genome_index_dir}/{genome_ID}-index.1.bt2",
-                                 genome_index_dir=config["data_dir_settings"]["index_dir"],
-                                 genome_ID=config["metadata_settings"]["genome_ID"]),
+        genome_index_done = touch("data/{run_ID}/bowtie2_{genome_ID}_index.done"),
         sra_dataset_reads_in_1 = "data/{run_ID}/raw_reads/{SRR_ID}_1.fastq",
         sra_dataset_reads_in_2 = "data/{run_ID}/raw_reads/{SRR_ID}_2.fastq"
     output:
