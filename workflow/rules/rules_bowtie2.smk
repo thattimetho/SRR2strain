@@ -34,7 +34,7 @@ rule bowtie2_index_db:
 rule bowtie2_map:
 ## bowtie2_map                                  : Map reads unto reference genome database
     input:
-        genome_index_done = touch("data/{run_ID}/bowtie2_{genome_ID}_index.done"),
+        genome_index_done = "data/{run_ID}/bowtie2_{genome_ID}_index.done",
         sra_dataset_reads_in_1 = "data/{run_ID}/raw_reads/{SRR_ID}_1.fastq",
         sra_dataset_reads_in_2 = "data/{run_ID}/raw_reads/{SRR_ID}_2.fastq"
     output:
