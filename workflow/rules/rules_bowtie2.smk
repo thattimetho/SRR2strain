@@ -8,7 +8,9 @@ rule bowtie2_index_db:
                               genome_fasta_dir = config["data_dir_settings"]["genome_dir"],
                               genome_ID = config["metadata_settings"]["genome_ID"])
     output:
-        genome_index_done = touch("data/{run_ID}/bowtie2_{genome_ID}_index.done")
+        genome_index_done = touch(expand("data/{run_ID}/bowtie2_{genome_ID}_index.done",
+                                         run_ID = config["metadata_settings"]["dataset_ID"],
+                                         genome_ID = config["metadata_settings"]["genome_ID"]))
     params:
         index_name = config["metadata_settings"]["genome_ID"],
         index_dir = config["data_dir_settings"]["index_dir"]
