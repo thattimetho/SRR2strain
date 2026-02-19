@@ -28,7 +28,7 @@ rule bowtie2_index_db:
     shell:
         """
         bowtie2-build --threads {threads} {input.genome_db_in} \
-        data/{params.index_dir}/{params.index_name}-index > {log.stdout} 2> {log.stderr}"
+        data/{params.index_dir}/{params.index_name}-index > {log.stdout} 2> {log.stderr}
         """
 
 rule bowtie2_map:
