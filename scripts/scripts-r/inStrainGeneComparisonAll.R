@@ -52,8 +52,11 @@ suppressPackageStartupMessages({
 source("/Users/thomasdebruijn/Documents/PhD/R_PhD/srr_library_load_func.R")
 
 # Set dataset names
-dataset.vec <- c("bodega_all", "glacial_all",
-                 "santosviromes_all", "landuse_all")
+dataset.vec <- c("glacial_all","santosviromes_all", "landuse_all", 
+                 "wildfire_all", "hopland_all", "wetup_all", "ncalhabitat_all", 
+                 "bodega_all", "permathaw_all", "newmexico_all",
+                 "medigrass_all","conifer_all")
+# "spruce_all","rhizo_all","ukagri_all"
 
 # Run data loading loop
 first_iteration <- TRUE
@@ -366,12 +369,7 @@ SRR_TO_PLOT.data.wide |>
     scale_x_log10()
 
 p.bar.dnds.all <- SRR_TO_PLOT.data.wide |>
-    dplyr::mutate(study_ID = if_else(SRR_ID == "SRR000006", "Glacial",
-                                     if_else(SRR_ID == "SRR000004", "AgriSoil",
-                                             if_else(SRR_ID == "SRR000002","BodegaBay",
-                                                     if_else(SRR_ID == "SRR000001", "Land-use",
-                                                             if_else(SRR_ID == "SRR000003", "Intertidal", 
-                                                                     if_else(SRR_ID == "SRR000007", "Wildfire", NA)))))),
+    dplyr::mutate(study_ID = SRR2name(SRR_ID),
                   .after = SRR_ID) |>
     ggplot( aes(x = study_ID, y = dNdS_substitutions, fill = lifestyle)) +
     geom_jitter(aes(colour = lifestyle), position = position_jitterdodge(), alpha = 0.7, stroke = F) +
@@ -379,12 +377,7 @@ p.bar.dnds.all <- SRR_TO_PLOT.data.wide |>
     geom_text(data = group_by(ungroup(SRR_TO_PLOT.data.wide), SRR_ID) |>
                   dplyr::filter(!is.na(dNdS_substitutions)) |>
                   dplyr::summarise(sum = n()) |>
-                  dplyr::mutate(study_ID = if_else(SRR_ID == "SRR000006", "Glacial",
-                                                   if_else(SRR_ID == "SRR000004", "AgriSoil",
-                                                           if_else(SRR_ID == "SRR000002","BodegaBay",
-                                                                   if_else(SRR_ID == "SRR000001", "Land-use",
-                                                                           if_else(SRR_ID == "SRR000003", "Intertidal", 
-                                                                                   if_else(SRR_ID == "SRR000007", "Wildfire", NA)))))),
+                  dplyr::mutate(study_ID = SRR2name(SRR_ID),
                                 .after = SRR_ID),
               aes(x = study_ID, y = 2.05, label = sum), inherit.aes = F) +
     scale_fill_manual(values = c("temperate" = "#2480e6", "virulent" = "#ec612e", 
@@ -421,12 +414,7 @@ pnps.stat.data.clean <- SRR_TO_PLOT.data.wide |>
     base::split(~SRR_ID, drop = T) |>
     purrr::map(~ wilcox.test(pNpS_variants ~ lifestyle, data = ., conf.int = T)) |>
     purrr::map_dfr( ~ broom::tidy(.), .id = "SRR_ID") |>
-    dplyr::mutate(study_ID = if_else(SRR_ID == "SRR000006", "Glacial",
-                                     if_else(SRR_ID == "SRR000004", "AgriSoil",
-                                             if_else(SRR_ID == "SRR000002","BodegaBay",
-                                                     if_else(SRR_ID == "SRR000001", "Land-use",
-                                                             if_else(SRR_ID == "SRR000003", "Intertidal", 
-                                                                     if_else(SRR_ID == "SRR000007", "Wildfire", NA)))))),
+    dplyr::mutate(study_ID = SRR2name(SRR_ID),
                   .after = SRR_ID) |>
     dplyr::rename(wilcox_pvalue = p.value, wilcox_estimate = estimate) |>
     dplyr::mutate(markup = ifelse(wilcox_pvalue > 0.05, "",
@@ -438,12 +426,7 @@ pnps.stat.data.clean <- SRR_TO_PLOT.data.wide |>
     dplyr::mutate(markup_estimate = ifelse(!markup %in% c("",NA), wilcox_estimate, ""))
 
 p.bar.pnps.all <- SRR_TO_PLOT.data.wide |>
-    dplyr::mutate(study_ID = if_else(SRR_ID == "SRR000006", "Glacial",
-                                     if_else(SRR_ID == "SRR000004", "AgriSoil",
-                                             if_else(SRR_ID == "SRR000002","BodegaBay",
-                                                     if_else(SRR_ID == "SRR000001", "Land-use",
-                                                             if_else(SRR_ID == "SRR000003", "Intertidal", 
-                                                                     if_else(SRR_ID == "SRR000007", "Wildfire", NA)))))),
+    dplyr::mutate(study_ID = SRR2name(SRR_ID),
                   .after = SRR_ID) |>
     dplyr::group_by(study_ID, SRR_ID, lifestyle, genome_ID) |>
     dplyr::summarise(pNpS_variants_median = median(pNpS_variants, na.rm = T), .groups = "keep") |>
@@ -456,17 +439,12 @@ p.bar.pnps.all <- SRR_TO_PLOT.data.wide |>
                   dplyr::filter(!is.na(pNpS_variants_median)) |>
                   dplyr::group_by(SRR_ID, lifestyle) |>
                   dplyr::summarise(sum = n(), .groups = "keep") |>
-                  dplyr::mutate(study_ID = if_else(SRR_ID == "SRR000006", "Glacial",
-                                                   if_else(SRR_ID == "SRR000004", "AgriSoil",
-                                                           if_else(SRR_ID == "SRR000002","BodegaBay",
-                                                                   if_else(SRR_ID == "SRR000001", "Land-use",
-                                                                           if_else(SRR_ID == "SRR000003", "Intertidal", 
-                                                                                   if_else(SRR_ID == "SRR000007", "Wildfire", NA)))))),
+                  dplyr::mutate(study_ID = SRR2name(SRR_ID),
                                 .after = SRR_ID),
-              aes(x = study_ID, y = 40, label = sum, group = lifestyle, hjust = 0.5, angle = 30), 
+              aes(x = study_ID, y = 10, label = sum, group = lifestyle, hjust = 0.5), 
               inherit.aes = F, position = position_dodge(width = 0.9), color = "black") +
     geom_text(inherit.aes = F, data = pnps.stat.data.clean,
-              aes(x = study_ID, y = 11, label = markup), hjust = 0.5, nudge_x = 0) +
+              aes(x = study_ID, y = 3, label = markup), hjust = 0.5, vjust = 0.8, nudge_x = 0, size = 6) +
     scale_fill_manual(values = c("temperate" = "#2480e6", "virulent" = "#ec612e", 
                                  "below_thresh" = "lightgrey", "unknown" = "grey"),
                       breaks = c("temperate", "virulent", "below_thresh", "unknown"),
@@ -478,34 +456,37 @@ p.bar.pnps.all <- SRR_TO_PLOT.data.wide |>
                        labels = c("temperate", "virulent", "below quality threshold", "unknown"),,
                        name = "vOTU lifestyle") +
     scale_y_log10() +
+    scale_x_discrete(limits = c("Wildfire","WetUp","PermaThaw","NewMexico","NCalHabitat","MediGrass","Land-use",
+                                "Hopland","Glacial","Conifer","BodegaBay","AgriSoil")) +
     geom_hline(yintercept = 1, colour = "red") +
     labs(title = "Distribution of pN/pS mutations (median value)",
          y = "pN/pS ratio",
          x = "Dataset ID") +
     theme_classic() +
-    theme(legend.position = "right",
+    theme(legend.position = "bottom",
           legend.background = element_rect(fill = "white"),
           panel.grid.minor.y = element_line(colour = "grey95"),
-          panel.grid.major.y = element_line(colour = "grey90"),
+          panel.grid.major.y = element_line(colour = c("grey75","grey90")),
           plot.title.position = "plot",
           plot.background = element_rect(fill = "white"),
-          axis.title.x = element_blank())
+          axis.title.y = element_blank()) +
+    coord_flip(clip = "on")
 tmp.genes.legend <- get_legend(p.bar.pnps.all)
 p.bar.pnps.all <- p.bar.pnps.all +
     theme(legend.position = "none")
 
 # ggsave(plot = p.bar.pnps.all,
 #        filename = paste(sys.args$data_wd, "genes_pnps_all_median.png", sep = "/"),
-#        width = 700, height = 500,
-#        units = "px", dpi = 400, scale = 2.5)
+#        width = 1100, height = 1500,
+#        units = "px", dpi = 300, scale = 1.2)
+# 
+# ggsave(plot = p.bar.pnps.all,
+#        filename = paste(sys.args$data_wd, "genes_pnps_all_median.tiff", sep = "/"),
+#        width = 1100, height = 1500,
+#        units = "px", dpi = 300, scale = 1.2)
 
 p.bar.pnps.all.mean <- SRR_TO_PLOT.data.wide |>
-    dplyr::mutate(study_ID = if_else(SRR_ID == "SRR000006", "Glacial",
-                                     if_else(SRR_ID == "SRR000004", "AgriSoil",
-                                             if_else(SRR_ID == "SRR000002","BodegaBay",
-                                                     if_else(SRR_ID == "SRR000001", "Land-use",
-                                                             if_else(SRR_ID == "SRR000003", "Intertidal", 
-                                                                     if_else(SRR_ID == "SRR000007", "Wildfire", NA)))))),
+    dplyr::mutate(study_ID = SRR2name(SRR_ID),
                   .after = SRR_ID) |>
     dplyr::group_by(study_ID, SRR_ID, lifestyle, genome_ID) |>
     dplyr::summarise(pNpS_variants_median = mean(pNpS_variants, na.rm = T), .groups = "keep") |>
@@ -518,12 +499,7 @@ p.bar.pnps.all.mean <- SRR_TO_PLOT.data.wide |>
                   dplyr::filter(!is.na(pNpS_variants_median)) |>
                   dplyr::group_by(SRR_ID, lifestyle) |>
                   dplyr::summarise(sum = n(), .groups = "keep") |>
-                  dplyr::mutate(study_ID = if_else(SRR_ID == "SRR000006", "Glacial",
-                                                   if_else(SRR_ID == "SRR000004", "AgriSoil",
-                                                           if_else(SRR_ID == "SRR000002","BodegaBay",
-                                                                   if_else(SRR_ID == "SRR000001", "Land-use",
-                                                                           if_else(SRR_ID == "SRR000003", "Intertidal", 
-                                                                                   if_else(SRR_ID == "SRR000007", "Wildfire", NA)))))),
+                  dplyr::mutate(study_ID = SRR2name(SRR_ID),
                                 .after = SRR_ID),
               aes(x = study_ID, y = 40, label = sum, group = lifestyle, hjust = 0.5, angle = 30), 
               inherit.aes = F, position = position_dodge(width = 0.9), color = "black") +
@@ -549,7 +525,8 @@ p.bar.pnps.all.mean <- SRR_TO_PLOT.data.wide |>
           panel.grid.major.y = element_line(colour = "grey90"),
           plot.title.position = "plot",
           plot.background = element_rect(fill = "white"),
-          axis.title.x = element_blank())
+          axis.title.x = element_blank(),
+          axis.text.x = element_text(angle = 30, vjust = 1, hjust = 1))
 
 # ggsave(plot = p.bar.pnps.all.mean,
 #        filename = paste(sys.args$data_wd, "genes_pnps_all_mean.png", sep = "/"),
@@ -557,12 +534,7 @@ p.bar.pnps.all.mean <- SRR_TO_PLOT.data.wide |>
 #        units = "px", dpi = 400, scale = 2.5)
 
 p.bar.dnds.all <- SRR_TO_PLOT.data.wide |>
-    dplyr::mutate(study_ID = if_else(SRR_ID == "SRR000006", "Glacial",
-                                     if_else(SRR_ID == "SRR000004", "AgriSoil",
-                                             if_else(SRR_ID == "SRR000002","BodegaBay",
-                                                     if_else(SRR_ID == "SRR000001", "Land-use",
-                                                             if_else(SRR_ID == "SRR000003", "Intertidal", 
-                                                                     if_else(SRR_ID == "SRR000007", "Wildfire", NA)))))),
+    dplyr::mutate(study_ID = SRR2name(SRR_ID),
                   .after = SRR_ID) |>
     ggplot( aes(x = study_ID, y = dNdS_substitutions, fill = lifestyle)) +
     geom_jitter(aes(colour = lifestyle), position = position_jitterdodge(), alpha = 0.7, stroke = F) +
@@ -570,12 +542,7 @@ p.bar.dnds.all <- SRR_TO_PLOT.data.wide |>
     geom_text(data = group_by(ungroup(SRR_TO_PLOT.data.wide), SRR_ID, lifestyle) |>
                   dplyr::filter(!is.na(dNdS_substitutions)) |>
                   dplyr::summarise(sum = n(), .groups = "keep") |>
-                  dplyr::mutate(study_ID = if_else(SRR_ID == "SRR000006", "Glacial",
-                                                   if_else(SRR_ID == "SRR000004", "AgriSoil",
-                                                           if_else(SRR_ID == "SRR000002","BodegaBay",
-                                                                   if_else(SRR_ID == "SRR000001", "Land-use",
-                                                                           if_else(SRR_ID == "SRR000003", "Intertidal", 
-                                                                                   if_else(SRR_ID == "SRR000007", "Wildfire", NA)))))),
+                  dplyr::mutate(study_ID = SRR2name(SRR_ID),
                                 .after = SRR_ID),
               aes(x = study_ID, y = 1.75, label = sum, group = lifestyle, hjust = 0.5, angle = 0), 
               inherit.aes = F, position = position_dodge(width = 0.9), color = "black") +
@@ -600,15 +567,11 @@ p.bar.dnds.all <- SRR_TO_PLOT.data.wide |>
           panel.grid.major.y = element_line(colour = "grey90"),
           plot.title.position = "plot",
           plot.background = element_rect(fill = "white"),
-          axis.title.x = element_blank())
+          axis.title.x = element_blank(),
+          axis.text.x = element_text(angle = 30, vjust = 1, hjust = 1))
 
 p.box.gene.gene_count.all <- SRR_TO_PLOT.data.wide |>
-    dplyr::mutate(study_ID = if_else(SRR_ID == "SRR000006", "Glacial",
-                                     if_else(SRR_ID == "SRR000004", "AgriSoil",
-                                             if_else(SRR_ID == "SRR000002","BodegaBay",
-                                                     if_else(SRR_ID == "SRR000001", "Land-use",
-                                                             if_else(SRR_ID == "SRR000003", "Intertidal", 
-                                                                     if_else(SRR_ID == "SRR000007", "Wildfire", NA)))))),
+    dplyr::mutate(study_ID = SRR2name(SRR_ID),
                   .after = SRR_ID) |>
     dplyr::group_by(study_ID, lifestyle, genome_ID) |>
     dplyr::distinct(genome_ID, .keep_all = T) |>
@@ -618,12 +581,7 @@ p.box.gene.gene_count.all <- SRR_TO_PLOT.data.wide |>
     geom_text(data = group_by(ungroup(SRR_TO_PLOT.data.wide), SRR_ID, lifestyle) |>
                   dplyr::distinct(genome_ID, .keep_all = T) |>
                   dplyr::summarise(sum = n(), .groups = "keep") |>
-                  dplyr::mutate(study_ID = if_else(SRR_ID == "SRR000006", "Glacial",
-                                                   if_else(SRR_ID == "SRR000004", "AgriSoil",
-                                                           if_else(SRR_ID == "SRR000002","BodegaBay",
-                                                                   if_else(SRR_ID == "SRR000001", "Land-use",
-                                                                           if_else(SRR_ID == "SRR000003", "Intertidal", 
-                                                                                   if_else(SRR_ID == "SRR000007", "Wildfire", NA)))))),
+                  dplyr::mutate(study_ID = SRR2name(SRR_ID),
                                 .after = SRR_ID),
               aes(x = study_ID, y = 750, label = sum, group = lifestyle, hjust = 0.5, angle = 30), 
               inherit.aes = F, position = position_dodge(width = 0.9), color = "black") +
@@ -646,15 +604,11 @@ p.box.gene.gene_count.all <- SRR_TO_PLOT.data.wide |>
           panel.grid.minor.y = element_line(colour = "grey95"),
           panel.grid.major.y = element_line(colour = "grey90"),
           plot.title.position = "plot",
-          plot.background = element_rect(fill = "white"))
+          plot.background = element_rect(fill = "white"),
+          axis.text.x = element_text(angle = 30, vjust = 1, hjust = 1))
 
 p.box.gene.host_gene_count.all <- SRR_TO_PLOT.data.wide |>
-    dplyr::mutate(study_ID = if_else(SRR_ID == "SRR000006", "Glacial",
-                                     if_else(SRR_ID == "SRR000004", "AgriSoil",
-                                             if_else(SRR_ID == "SRR000002","BodegaBay",
-                                                     if_else(SRR_ID == "SRR000001", "Land-use",
-                                                             if_else(SRR_ID == "SRR000003", "Intertidal", 
-                                                                     if_else(SRR_ID == "SRR000007", "Wildfire", NA)))))),
+    dplyr::mutate(study_ID = SRR2name(SRR_ID),
                   .after = SRR_ID) |>
     dplyr::group_by(study_ID, lifestyle, genome_ID) |>
     dplyr::distinct(genome_ID, .keep_all = T) |>
@@ -680,7 +634,8 @@ p.box.gene.host_gene_count.all <- SRR_TO_PLOT.data.wide |>
           panel.grid.minor.y = element_line(colour = "grey95"),
           panel.grid.major.y = element_line(colour = "grey90"),
           plot.title.position = "plot",
-          plot.background = element_rect(fill = "white"))
+          plot.background = element_rect(fill = "white"),
+          axis.text.x = element_text(angle = 30, vjust = 1, hjust = 1))
 
 p_collected_genes <- gridExtra::grid.arrange(p.bar.pnps.all,
                                              p.box.gene.gene_count.all,
@@ -690,11 +645,11 @@ p_collected_genes <- gridExtra::grid.arrange(p.bar.pnps.all,
                                              top = NULL,
                                              ncol = 3, nrow = 2,
                                              layout_matrix = cbind(c(1,2),c(3,4),c(5,5)),
-                                             widths = c(2.5,2.5,.7))
+                                             widths = c(2.5,2.5,.5))
 
 # ggsave(plot = p_collected_genes,
 #        filename = paste(sys.args$data_wd, "dNdS_combination_plot_genes_all.png", sep = "/"),
-#        width = 2000, height = 1500,
+#        width = 4000, height = 2000,
 #        units = "px", dpi = 400, scale = 1.5)
 
 #####
@@ -703,24 +658,14 @@ SRR_TO_PLOT.data.wide |>
     base::split(~SRR_ID, drop = T) |>
     purrr::map(~ wilcox.test(gene_count ~ lifestyle, data = ., conf.int = T)) |>
     purrr::map_dfr( ~ broom::tidy(.), .id = "SRR_ID") |>
-    dplyr::mutate(study_ID = if_else(SRR_ID == "SRR000006", "Glacial",
-                                     if_else(SRR_ID == "SRR000004", "AgriSoil",
-                                             if_else(SRR_ID == "SRR000002","BodegaBay",
-                                                     if_else(SRR_ID == "SRR000001", "Land-use",
-                                                             if_else(SRR_ID == "SRR000003", "Intertidal", 
-                                                                     if_else(SRR_ID == "SRR000007", "Wildfire", NA)))))),
+    dplyr::mutate(study_ID = SRR2name(SRR_ID),
                   .after = SRR_ID)
 
 SRR_TO_PLOT.data.wide |>
     base::split(~SRR_ID, drop = T) |>
     purrr::map(~ wilcox.test(nucl_diversity_gene ~ lifestyle, data = ., conf.int = T)) |>
     purrr::map_dfr( ~ broom::tidy(.), .id = "SRR_ID") |>
-    dplyr::mutate(study_ID = if_else(SRR_ID == "SRR000006", "Glacial",
-                                     if_else(SRR_ID == "SRR000004", "AgriSoil",
-                                             if_else(SRR_ID == "SRR000002","BodegaBay",
-                                                     if_else(SRR_ID == "SRR000001", "Land-use",
-                                                             if_else(SRR_ID == "SRR000003", "Intertidal", 
-                                                                     if_else(SRR_ID == "SRR000007", "Wildfire", NA)))))),
+    dplyr::mutate(study_ID = SRR2name(SRR_ID),
                   .after = SRR_ID)
 
 SRR_TO_PLOT.data.wide |>
@@ -728,12 +673,7 @@ SRR_TO_PLOT.data.wide |>
     base::split(~SRR_ID, drop = T) |>
     purrr::map(~ wilcox.test(pNpS_variants ~ lifestyle, data = ., conf.int = T)) |>
     purrr::map_dfr( ~ broom::tidy(.), .id = "SRR_ID") |>
-    dplyr::mutate(study_ID = if_else(SRR_ID == "SRR000006", "Glacial",
-                                     if_else(SRR_ID == "SRR000004", "AgriSoil",
-                                             if_else(SRR_ID == "SRR000002","BodegaBay",
-                                                     if_else(SRR_ID == "SRR000001", "Land-use",
-                                                             if_else(SRR_ID == "SRR000003", "Intertidal", 
-                                                                     if_else(SRR_ID == "SRR000007", "Wildfire", NA)))))),
+    dplyr::mutate(study_ID = SRR2name(SRR_ID),
                   .after = SRR_ID)
 
 SRR_TO_PLOT.data.wide |>
@@ -743,12 +683,7 @@ SRR_TO_PLOT.data.wide |>
     base::split(~SRR_ID, drop = T) |>
     purrr::map(~ wilcox.test(pNpS_variants_median ~ lifestyle, data = ., conf.int = T)) |>
     purrr::map_dfr( ~ broom::tidy(.), .id = "SRR_ID") |>
-    dplyr::mutate(study_ID = if_else(SRR_ID == "SRR000006", "Glacial",
-                                     if_else(SRR_ID == "SRR000004", "AgriSoil",
-                                             if_else(SRR_ID == "SRR000002","BodegaBay",
-                                                     if_else(SRR_ID == "SRR000001", "Land-use",
-                                                             if_else(SRR_ID == "SRR000003", "Intertidal", 
-                                                                     if_else(SRR_ID == "SRR000007", "Wildfire", NA)))))),
+    dplyr::mutate(study_ID = SRR2name(SRR_ID),
                   .after = SRR_ID)
 
 cor.data.virulent <- cor(dplyr::filter(SRR_TO_PLOT.data.wide, lifestyle == "virulent" & SRR_ID == "SRR000006") |>
@@ -782,29 +717,19 @@ corrplot(cor.data.all, method = "number", type = "upper", tl.srt = 45)
 
 ##### Second collection plot, general statistics ####
 p.bar.lifestyle_total.all.per_study.per_lifestyle <- SRR_TO_PLOT.data.wide |>
-    dplyr::mutate(study_ID = if_else(SRR_ID == "SRR000006", "Glacial",
-                                     if_else(SRR_ID == "SRR000004", "AgriSoil",
-                                             if_else(SRR_ID == "SRR000002","BodegaBay",
-                                                     if_else(SRR_ID == "SRR000001", "Land-use",
-                                                             if_else(SRR_ID == "SRR000003", "Intertidal", 
-                                                                     if_else(SRR_ID == "SRR000007", "Wildfire", NA)))))),
+    dplyr::mutate(study_ID = SRR2name(SRR_ID),
                   .after = SRR_ID) |>
     dplyr::filter(completeness >= 80 & coverage_genome >= 10 & breadth_genome > 0.8) |>
     dplyr::group_by(study_ID, lifestyle) |>
     ggplot( aes(x = study_ID, fill = lifestyle)) +
     geom_bar(position = "fill", alpha = 1, width = 0.3) +
-    geom_text(data = dplyr::mutate(SRR_TO_PLOT.data.wide, study_ID = if_else(SRR_ID == "SRR000006", "Glacial",
-                                                                             if_else(SRR_ID == "SRR000004", "AgriSoil",
-                                                                                     if_else(SRR_ID == "SRR000002","BodegaBay",
-                                                                                             if_else(SRR_ID == "SRR000001", "Land-use",
-                                                                                                     if_else(SRR_ID == "SRR000003", "Intertidal", 
-                                                                                                             if_else(SRR_ID == "SRR000007", "Wildfire", NA)))))),
-                                   .after = SRR_ID) |>
+    geom_text(data = dplyr::mutate(SRR_TO_PLOT.data.wide, study_ID = SRR2name(SRR_ID), .after = SRR_ID) |>
+                  dplyr::select(study_ID, SRR_ID, completeness, coverage_genome, breadth_genome) |>
                   dplyr::filter(completeness >= 80 & coverage_genome >= 10 & breadth_genome > 0.8) |>
                   #ungroup() |>
                   dplyr::group_by(SRR_ID, study_ID) |>
                   dplyr::summarise(sum = n()),
-              aes(x = study_ID, y = 1.09, label = sum), inherit.aes = F, vjust = 1) +
+              aes(x = study_ID, y = 1.09, label = sum), inherit.aes = F, vjust = 1, angle = 25) +
     scale_fill_manual(values = c("temperate" = "#2480e6", "virulent" = "#ec612e", 
                                  "below_thresh" = "lightgrey", "unknown" = "grey",
                                  "used" = "black", "discarded" = "grey"),
@@ -823,19 +748,15 @@ p.bar.lifestyle_total.all.per_study.per_lifestyle <- SRR_TO_PLOT.data.wide |>
           panel.grid.major.y = element_line(colour = "grey90"),
           plot.title.position = "plot",
           plot.background = element_rect(fill = "white"),
-          axis.title.x = element_blank())
+          axis.title.x = element_blank(),
+          axis.text.x = element_text(angle = 30, vjust = 1, hjust = 1))
 tmp.lifestyle.legend <- get_legend(p.bar.lifestyle_total.all.per_study.per_lifestyle)
 p.bar.lifestyle_total.all.per_study.per_lifestyle <- p.bar.lifestyle_total.all.per_study.per_lifestyle +
     theme(legend.position = "none")
 
 # Boxplot of length per lifestyle per study 
 p.box.length.all.per_study.per_lifestyle <- SRR_TO_PLOT.data.wide |>
-    dplyr::mutate(study_ID = if_else(SRR_ID == "SRR000006", "Glacial",
-                                     if_else(SRR_ID == "SRR000004", "AgriSoil",
-                                             if_else(SRR_ID == "SRR000002","BodegaBay",
-                                                     if_else(SRR_ID == "SRR000001", "Land-use",
-                                                             if_else(SRR_ID == "SRR000003", "Intertidal", 
-                                                                     if_else(SRR_ID == "SRR000007", "Wildfire", NA)))))),
+    dplyr::mutate(study_ID = SRR2name(SRR_ID),
                   .after = SRR_ID) |>
     dplyr::filter(completeness >= 80 & coverage_genome >= 10 & breadth_genome > 0.8) |>
     dplyr::group_by(study_ID, lifestyle, genome_ID) |>
@@ -864,16 +785,12 @@ p.box.length.all.per_study.per_lifestyle <- SRR_TO_PLOT.data.wide |>
           panel.grid.major.y = element_line(colour = "grey90"),
           plot.title.position = "plot",
           plot.background = element_rect(fill = "white"),
-          axis.title.x = element_blank())
+          axis.title.x = element_blank(),
+          axis.text.x = element_text(angle = 30, vjust = 1, hjust = 1))
 
 # Boxplot of coverage per lifestyle per study 
 p.box.coverage.all.per_study.per_lifestyle <- SRR_TO_PLOT.data.wide |>
-    dplyr::mutate(study_ID = if_else(SRR_ID == "SRR000006", "Glacial",
-                                     if_else(SRR_ID == "SRR000004", "AgriSoil",
-                                             if_else(SRR_ID == "SRR000002","BodegaBay",
-                                                     if_else(SRR_ID == "SRR000001", "Land-use",
-                                                             if_else(SRR_ID == "SRR000003", "Intertidal", 
-                                                                     if_else(SRR_ID == "SRR000007", "Wildfire", NA)))))),
+    dplyr::mutate(study_ID = SRR2name(SRR_ID),
                   .after = SRR_ID) |>
     dplyr::filter(completeness >= 80 & coverage_genome >= 10 & breadth_genome > 0.8) |>
     dplyr::group_by(study_ID, lifestyle, genome_ID) |>
@@ -902,16 +819,12 @@ p.box.coverage.all.per_study.per_lifestyle <- SRR_TO_PLOT.data.wide |>
           panel.grid.minor.y = element_line(colour = "grey95"),
           panel.grid.major.y = element_line(colour = "grey90"),
           plot.title.position = "plot",
-          plot.background = element_rect(fill = "white"))
+          plot.background = element_rect(fill = "white"),
+          axis.text.x = element_text(angle = 30, vjust = 1, hjust = 1))
 
 # Boxplot of completeness per lifestyle per study 
 p.box.completeness.all.per_study.per_lifestyle <- SRR_TO_PLOT.data.wide |>
-    dplyr::mutate(study_ID = if_else(SRR_ID == "SRR000006", "Glacial",
-                                     if_else(SRR_ID == "SRR000004", "AgriSoil",
-                                             if_else(SRR_ID == "SRR000002","BodegaBay",
-                                                     if_else(SRR_ID == "SRR000001", "Land-use",
-                                                             if_else(SRR_ID == "SRR000003", "Intertidal", 
-                                                                     if_else(SRR_ID == "SRR000007", "Wildfire", NA)))))),
+    dplyr::mutate(study_ID = SRR2name(SRR_ID),
                   .after = SRR_ID) |>
     dplyr::filter(completeness >= 80 & coverage_genome >= 10 & breadth_genome > 0.8) |>
     dplyr::group_by(study_ID, lifestyle, genome_ID) |>
@@ -920,18 +833,12 @@ p.box.completeness.all.per_study.per_lifestyle <- SRR_TO_PLOT.data.wide |>
     ggplot( aes(x = study_ID, y = median_breadth_gene, fill = lifestyle)) +
     geom_jitter(position = position_jitterdodge(), alpha = 0.3, aes(color = lifestyle), stroke = F) +
     geom_boxplot(outliers = F, position = "dodge") +
-    geom_text(data = dplyr::mutate(SRR_TO_PLOT.data.wide, study_ID = if_else(SRR_ID == "SRR000006", "Glacial",
-                                                                             if_else(SRR_ID == "SRR000004", "AgriSoil",
-                                                                                     if_else(SRR_ID == "SRR000002","BodegaBay",
-                                                                                             if_else(SRR_ID == "SRR000001", "Land-use",
-                                                                                                     if_else(SRR_ID == "SRR000003", "Intertidal", 
-                                                                                                             if_else(SRR_ID == "SRR000007", "Wildfire", NA)))))),
-                                   .after = SRR_ID) |>
+    geom_text(data = dplyr::mutate(SRR_TO_PLOT.data.wide, study_ID = SRR2name(SRR_ID), .after = SRR_ID) |>
                   dplyr::filter(completeness >= 80 & coverage_genome >= 10 & breadth_genome > 0.8) |>
                   #ungroup() |>
                   dplyr::group_by(study_ID, lifestyle) |>
                   dplyr::summarise(sum = n()),
-              aes(x = study_ID, y = 90, label = sum), inherit.aes = F, vjust = 1, position = position_dodge2(0.9), angle = 45) +
+              aes(x = study_ID, y = 90, label = sum), inherit.aes = F, vjust = 1, position = position_dodge2(0.9), angle = 35) +
     scale_fill_manual(values = c("temperate" = "#2480e6", "virulent" = "#ec612e", 
                                  "below_thresh" = "lightgrey", "unknown" = "grey"),
                       breaks = c("temperate", "virulent", "below_thresh", "unknown"),
@@ -953,7 +860,8 @@ p.box.completeness.all.per_study.per_lifestyle <- SRR_TO_PLOT.data.wide |>
           panel.grid.minor.y = element_line(colour = "grey95"),
           panel.grid.major.y = element_line(colour = "grey90"),
           plot.title.position = "plot",
-          plot.background = element_rect(fill = "white"))
+          plot.background = element_rect(fill = "white"),
+          axis.text.x = element_text(angle = 30, vjust = 1, hjust = 1))
 
 # Assemble above graphs into a single block using gridExtra
 p_collected_population <- gridExtra::grid.arrange(p.bar.lifestyle_total.all.per_study.per_lifestyle,
@@ -969,16 +877,11 @@ p_collected_population <- gridExtra::grid.arrange(p.bar.lifestyle_total.all.per_
 # ggsave(plot = p_collected_population,
 #        filename = paste(sys.args$data_wd, "lifestyle_plot_genes_all.png", sep = "/"),
 #        width = 2000, height = 1500,
-#        units = "px", dpi = 400, scale = 1.5)
+#        units = "px", dpi = 400, scale = 2.5)
 
 ##### Making line graphs of relationships between genome metrics and gene metrics ####
 p.point.microdiversity.gene_vs_genome.all <- SRR_TO_PLOT.data.wide |>
-    dplyr::mutate(study_ID = if_else(SRR_ID == "SRR000006", "Glacial",
-                                     if_else(SRR_ID == "SRR000004", "AgriSoil",
-                                             if_else(SRR_ID == "SRR000002","BodegaBay",
-                                                     if_else(SRR_ID == "SRR000001", "Land-use",
-                                                             if_else(SRR_ID == "SRR000003", "Intertidal", 
-                                                                     if_else(SRR_ID == "SRR000007", "Wildfire", NA)))))),
+    dplyr::mutate(study_ID = SRR2name(SRR_ID),
                   .after = SRR_ID) |>
     dplyr::filter(completeness >= 80 & coverage_genome >= 10 & breadth_genome > 0.8) |>
     dplyr::group_by(study_ID, lifestyle, genome_ID) |>
@@ -1000,12 +903,7 @@ p.point.microdiversity.gene_vs_genome.all <- SRR_TO_PLOT.data.wide |>
           plot.background = element_rect(fill = "white"))
 
 p.point.coverage.gene_vs_genome.all <- SRR_TO_PLOT.data.wide |>
-    dplyr::mutate(study_ID = if_else(SRR_ID == "SRR000006", "Glacial",
-                                     if_else(SRR_ID == "SRR000004", "AgriSoil",
-                                             if_else(SRR_ID == "SRR000002","BodegaBay",
-                                                     if_else(SRR_ID == "SRR000001", "Land-use",
-                                                             if_else(SRR_ID == "SRR000003", "Intertidal", 
-                                                                     if_else(SRR_ID == "SRR000007", "Wildfire", NA)))))),
+    dplyr::mutate(study_ID = SRR2name(SRR_ID),
                   .after = SRR_ID) |>
     dplyr::filter(completeness >= 80 & coverage_genome >= 10 & breadth_genome > 0.8) |>
     dplyr::group_by(study_ID, lifestyle, genome_ID) |>
@@ -1027,12 +925,7 @@ p.point.coverage.gene_vs_genome.all <- SRR_TO_PLOT.data.wide |>
           plot.background = element_rect(fill = "white"))
 
 SRR_TO_PLOT.data.wide |>
-    dplyr::mutate(study_ID = if_else(SRR_ID == "SRR000006", "Glacial",
-                                     if_else(SRR_ID == "SRR000004", "AgriSoil",
-                                             if_else(SRR_ID == "SRR000002","BodegaBay",
-                                                     if_else(SRR_ID == "SRR000001", "Land-use",
-                                                             if_else(SRR_ID == "SRR000003", "Intertidal", 
-                                                                     if_else(SRR_ID == "SRR000007", "Wildfire", NA)))))),
+    dplyr::mutate(study_ID = SRR2name(SRR_ID),
                   .after = SRR_ID) |>
     dplyr::filter(completeness >= 80 & coverage_genome >= 10 & breadth_genome > 0.8) |>
     dplyr::group_by(study_ID, lifestyle, genome_ID) |>

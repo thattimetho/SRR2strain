@@ -1,6 +1,6 @@
 # Custom SRR ID function
 SRR_extract <- function(in.string){
-  SRR.pattern <- "^SRR\\d{6,10}$"
+  SRR.pattern <- "^[E,S]RR\\d{6,10}$"
   in.string = str_split_1(in.string, "_|-")
   out.string = in.string[str_detect(in.string, SRR.pattern)]
   out.string = as.character(out.string)
@@ -11,6 +11,48 @@ SRR_extract <- function(in.string){
   
   return(out.string)
 }
+
+# Custom SRR ID to Name function
+SRR2name <- function(in.string){
+    if (in.string == "SRR000006"){
+        return("Glacial")
+    } else if (in.string == "SRR000004"){
+        return("AgriSoil")
+    } else if (in.string == "SRR000002"){
+        return("BodegaBay")
+    } else if (in.string == "SRR000001"){
+        return("Land-use")
+    } else if (in.string == "SRR000003"){
+        return("Intertidal")
+    } else if (in.string == "SRR000007"){
+        return("Wildfire")
+    } else if (in.string == "SRR000008"){
+        return("Antarctic")
+    } else if (in.string == "SRR000009"){
+        return("Hopland")
+    } else if (in.string == "SRR000010"){
+        return("WetUp")
+    } else if (in.string == "SRR000011") {
+        return("PermaThaw")
+    } else if (in.string == "SRR000012"){
+        return("NCalHabitat")
+    } else if (in.string == "SRR000013") {
+        return("Spruce")
+    } else if (in.string == "SRR000014") {
+        return("NewMexico")
+    } else if (in.string == "SRR000015") {
+        return("MediGrass")
+    } else if (in.string == "SRR000017") {
+        return("Conifer")
+    } else if (in.string == "SRR000016") {
+        return("Rhizo")
+    } else if (in.string == "SRR000018") {
+        return("UKagri")
+    } else {
+        return(NA)
+    }
+}
+SRR2name <- Vectorize(SRR2name)
 
 # Main SRR function for loading instrain scaffold output by SRR ID
 load_srr_libraries <- function(srr_file_vector, lifestyle_df, checkv_df,
